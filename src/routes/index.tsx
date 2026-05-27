@@ -14,6 +14,8 @@ import { AbonosPage } from '@/features/abonos/pages/AbonosPage'
 import { RetirosPage } from '@/features/retiros/pages/RetirosPage'
 import { ReportesPage } from '@/features/reportes/pages/ReportesPage'
 import { ConfiguracionPage } from '@/features/configuracion/pages/ConfiguracionPage'
+import { UsuariosPage } from '@/features/usuarios/pages/UsuariosPage'
+import { NotFoundPage } from '@/app/pages/NotFoundPage'
 
 export const router = createBrowserRouter([
   {
@@ -42,11 +44,13 @@ export const router = createBrowserRouter([
               { path: 'abonos', element: <AbonosPage /> },
               { path: 'retiros', element: <RetirosPage /> },
               { path: 'reportes', element: <ReportesPage /> },
+              { path: 'usuarios', element: <UsuariosPage /> },
               { path: 'configuracion', element: <ConfiguracionPage /> },
             ],
           },
         ],
       },
+      { path: '*', element: <NotFoundPage /> },
     ],
   },
 ])

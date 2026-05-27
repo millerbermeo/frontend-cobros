@@ -76,7 +76,7 @@ export function AuthLayout() {
           <span className="text-lg font-bold text-foreground">Cobros</span>
         </div>
 
-        <div className="w-full max-w-sm">
+        <div className="w-full max-w-md">
           <Outlet />
         </div>
       </div>
