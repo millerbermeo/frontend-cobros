@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { queryClient } from '@/lib/react-query'
 import { setupResponseInterceptor } from '@/lib/axios'
 import { useAuthStore } from '@/features/auth/store/auth.store'
+import { GlobalModal } from '@/shared/components/GlobalModal'
 
 export function AppProviders() {
   const navigate = useNavigate()
@@ -19,6 +20,7 @@ export function AppProviders() {
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
+      <GlobalModal />
     </QueryClientProvider>
   )
 }
