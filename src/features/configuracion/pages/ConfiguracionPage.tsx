@@ -1,9 +1,19 @@
 import { ConfiguracionLayout } from '../layouts/ConfiguracionLayout'
+import { TasasInteresForm } from '../components/TasasInteresForm'
+import { IntegracionEducacionForm } from '../components/IntegracionEducacionForm'
 
 export function ConfiguracionPage() {
   return (
     <ConfiguracionLayout>
-      <h1 className="text-2xl font-semibold text-foreground">Configuración</h1>
+      <div>
+        <h1 className="text-xl font-bold text-foreground">Configuración</h1>
+        <p className="text-sm text-foreground/50 mt-0.5">
+          Administra los parámetros globales del sistema
+        </p>
+      </div>
+
+      <TasasInteresForm />
+      <IntegracionEducacionForm />
     </ConfiguracionLayout>
   )
 }
