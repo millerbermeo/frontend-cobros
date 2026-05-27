@@ -37,17 +37,23 @@ export function UsuarioForm({ usuario, onSuccess, onCancel }: UsuarioFormProps) 
 
   const createForm = useForm<CreateUsuarioValues>({
     resolver: zodResolver(createUsuarioSchema),
-    defaultValues: { nombre: '', apellido: '', email: '', rol: 'cobrador', password: '', confirmPassword: '' },
+    defaultValues: { nombre: '', username: '', email: '', rol: 'cobrador', password: '', confirmPassword: '' },
   })
 
   const editForm = useForm<EditUsuarioValues>({
     resolver: zodResolver(editUsuarioSchema),
-    defaultValues: { nombre: '', apellido: '', email: '', rol: 'cobrador', estado: 'activo' },
+    defaultValues: { nombre: '', username: '', email: '', rol: 'cobrador', estado: 'activo' },
   })
 
   useEffect(() => {
     if (usuario) {
-      editForm.reset({ nombre: usuario.nombre, apellido: usuario.apellido, email: usuario.email, rol: usuario.rol, estado: usuario.estado })
+      editForm.reset({
+        nombre:   usuario.nombre,
+        username: usuario.username ?? '',
+        email:    usuario.email,
+        rol:      usuario.rol,
+        estado:   usuario.estado,
+      })
     } else {
       createForm.reset()
     }
@@ -57,8 +63,8 @@ export function UsuarioForm({ usuario, onSuccess, onCancel }: UsuarioFormProps) 
     return (
       <form onSubmit={editForm.handleSubmit(onSuccess)} className="flex flex-col gap-4">
         <div className="grid grid-cols-2 gap-3">
-          <FormInput<EditUsuarioValues> name="nombre"   control={editForm.control} label="Nombre"   placeholder="Juan"  isRequired />
-          <FormInput<EditUsuarioValues> name="apellido" control={editForm.control} label="Apellido" placeholder="Pérez" isRequired />
+          <FormInput<EditUsuarioValues> name="nombre"   control={editForm.control} label="Nombre"   placeholder="Juan"       isRequired />
+          <FormInput<EditUsuarioValues> name="username" control={editForm.control} label="Username" placeholder="juan123"             />
         </div>
         <FormInput<EditUsuarioValues> name="email" control={editForm.control} label="Correo electrónico" placeholder="usuario@cobros.com" type="email" isRequired />
 
@@ -88,8 +94,8 @@ export function UsuarioForm({ usuario, onSuccess, onCancel }: UsuarioFormProps) 
   return (
     <form onSubmit={createForm.handleSubmit(onSuccess)} className="flex flex-col gap-4">
       <div className="grid grid-cols-2 gap-3">
-        <FormInput<CreateUsuarioValues> name="nombre"   control={createForm.control} label="Nombre"   placeholder="Juan"  isRequired />
-        <FormInput<CreateUsuarioValues> name="apellido" control={createForm.control} label="Apellido" placeholder="Pérez" isRequired />
+        <FormInput<CreateUsuarioValues> name="nombre"   control={createForm.control} label="Nombre"   placeholder="Juan"   isRequired />
+        <FormInput<CreateUsuarioValues> name="username" control={createForm.control} label="Username" placeholder="juan123"          />
       </div>
       <FormInput<CreateUsuarioValues> name="email" control={createForm.control} label="Correo electrónico" placeholder="usuario@cobros.com" type="email" isRequired />
 
@@ -100,8 +106,10 @@ export function UsuarioForm({ usuario, onSuccess, onCancel }: UsuarioFormProps) 
         </select>
       </div>
 
-      <FormInput<CreateUsuarioValues> name="password"        control={createForm.control} label="Contraseña"         placeholder="Mínimo 8 caracteres" type="password" isRequired />
-      <FormInput<CreateUsuarioValues> name="confirmPassword" control={createForm.control} label="Confirmar contraseña" placeholder="Repite la contraseña"   type="password" isRequired />
+      <div className="grid grid-cols-2 gap-3">
+        <FormInput<CreateUsuarioValues> name="password"        control={createForm.control} label="Contraseña"          placeholder="Mínimo 8 caracteres" type="password" isRequired />
+        <FormInput<CreateUsuarioValues> name="confirmPassword" control={createForm.control} label="Confirmar contraseña" placeholder="Repite la contraseña" type="password" isRequired />
+      </div>
 
       <div className="flex justify-end gap-2 pt-2 border-t border-border mt-2">
         <Button type="button" variant="ghost" onPress={onCancel}>Cancelar</Button>
