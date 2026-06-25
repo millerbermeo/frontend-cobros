@@ -1,19 +1,21 @@
 import { authApi } from '../api/auth.api'
 import { useAuthStore } from '../store/auth.store'
-import type { LoginCredentials } from '../types/auth.types'
+import type { LoginRequest } from '../types/auth.types'
 
 export const authService = {
-  async login(credentials: LoginCredentials) {
+  async login(credentials: LoginRequest) {
     const { data } = await authApi.login(credentials)
-    useAuthStore.getState().login(data.user, data.token)
-    return data
-  },
 
-  async logout() {
-    try {
-      await authApi.logout()
-    } finally {
-      useAuthStore.getState().logout()
+    console.log(data)
+    const user = {
+      user_id: data.user_id,
+      username: data.username,
+      name: data.name,
+      rol: data.rol,
+      modules: JSON.parse(data.modules) as string[],
     }
+
+    useAuthStore.getState().login(user, data.token)
+    return user
   },
 }

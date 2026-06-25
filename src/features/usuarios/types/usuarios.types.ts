@@ -1,12 +1,10 @@
-export type RolUsuario = 'admin' | 'cobrador' | 'supervisor' | 'auditor'
-export type EstadoUsuario = 'activo' | 'inactivo'
+export type RolUsuario = 'Administrador' | 'Supervisor' | 'Cobrador' | 'Auditor'
 
 export interface Usuario {
-  id: string
-  nombre: string
-  username?: string
-  email: string
+  id: number
+  name: string
+  username: string
+  pass?: string
   rol: RolUsuario
-  estado: EstadoUsuario
-  createdAt: string
+  state: number // 1 = activo, 0 = inactivo
 }

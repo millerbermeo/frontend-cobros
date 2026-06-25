@@ -50,7 +50,7 @@ interface NavbarProps {
 
 export function Navbar({ onMobileMenuOpen }: NavbarProps) {
   const { isDark, toggleTheme } = useTheme()
-  const { mutate: logout } = useLogout()
+  const logout = useLogout()
   const user = useCurrentUser()
   const { pathname } = useLocation()
 
@@ -102,7 +102,7 @@ export function Navbar({ onMobileMenuOpen }: NavbarProps) {
         <div className="w-px h-6 bg-border mx-1" />
 
         {/* User pill */}
-        {user?.name && (
+        {user && (
           <div className="hidden sm:flex items-center gap-2.5 bg-foreground/5 hover:bg-foreground/8 transition-colors rounded-xl px-3 py-1.5 cursor-default">
             <Avatar size="sm" className="bg-primary w-7 h-7">
               <Avatar.Fallback className="text-white text-[11px] font-bold">
@@ -111,7 +111,7 @@ export function Navbar({ onMobileMenuOpen }: NavbarProps) {
             </Avatar>
             <div className="flex flex-col leading-tight">
               <span className="text-xs font-semibold text-foreground">{user.name}</span>
-              <span className="text-[10px] text-foreground/40 font-medium">Administrador</span>
+              <span className="text-[10px] text-foreground/40 font-medium">{user.rol}</span>
             </div>
           </div>
         )}
@@ -122,7 +122,7 @@ export function Navbar({ onMobileMenuOpen }: NavbarProps) {
             <Button
               variant="ghost"
               isIconOnly
-              onPress={() => logout()}
+              onPress={logout}
               className="text-foreground/50 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-colors"
             >
               <MdLogout className="w-[18px] h-[18px]" />
