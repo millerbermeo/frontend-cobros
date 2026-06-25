@@ -1,6 +1,7 @@
 import { ConfiguracionLayout } from '../layouts/ConfiguracionLayout'
 import { TasasInteresForm } from '../components/TasasInteresForm'
 import { IntegracionEducacionForm } from '../components/IntegracionEducacionForm'
+import { UsuariosPage } from '@/features/usuarios/pages/UsuariosPage'
 
 export function ConfiguracionPage() {
   return (
@@ -14,6 +15,7 @@ export function ConfiguracionPage() {
 
       <TasasInteresForm />
       <IntegracionEducacionForm />
+      <UsuariosPage />
     </ConfiguracionLayout>
   )
 }
