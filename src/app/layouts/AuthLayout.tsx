@@ -1,5 +1,6 @@
-import { Outlet } from 'react-router-dom'
+import { Navigate, Outlet } from 'react-router-dom'
 import { MdAccountBalanceWallet, MdCheckCircle } from 'react-icons/md'
+import { useAuthStore } from '@/features/auth/store/auth.store'
 
 const FEATURES = [
   'Gestión integral de clientes',
@@ -8,6 +9,10 @@ const FEATURES = [
 ]
 
 export function AuthLayout() {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+
+  if (isAuthenticated) return <Navigate to="/" replace />
+
   return (
     <div className="min-h-screen flex">
       {/* ── Left decorative panel ── */}
