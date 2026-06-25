@@ -22,10 +22,10 @@ export function NotFoundPage() {
 
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <Button
-            variant="bordered"
+            variant="outline"
             onPress={() => navigate(-1)}
-            startContent={<MdArrowBack className="w-4 h-4" />}
           >
+            <MdArrowBack className="w-4 h-4" />
             Volver atrás
           </Button>
           <Button
