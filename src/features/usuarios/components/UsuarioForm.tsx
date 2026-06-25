@@ -120,26 +120,14 @@ export function UsuarioForm({ usuario, roles, onSuccess, onCancel, isPending }: 
         type="password" isRequired
       />
 
-      <div className="grid grid-cols-2 gap-3">
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-foreground">Rol <span className="text-danger">*</span></label>
-          <select {...createForm.register('rol')} className={SELECT_CLASS}>
-            {roles.map((r) => <option key={r} value={r}>{r}</option>)}
-          </select>
-          {createForm.formState.errors.rol && (
-            <p className="text-xs text-danger">{createForm.formState.errors.rol.message}</p>
-          )}
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-foreground">Estado <span className="text-danger">*</span></label>
-          <select
-            {...createForm.register('state', { valueAsNumber: true })}
-            className={SELECT_CLASS}
-          >
-            <option value={1}>Activo</option>
-            <option value={0}>Inactivo</option>
-          </select>
-        </div>
+      <div className="flex flex-col gap-1">
+        <label className="text-sm font-medium text-foreground">Rol <span className="text-danger">*</span></label>
+        <select {...createForm.register('rol')} className={SELECT_CLASS}>
+          {roles.map((r) => <option key={r} value={r}>{r}</option>)}
+        </select>
+        {createForm.formState.errors.rol && (
+          <p className="text-xs text-danger">{createForm.formState.errors.rol.message}</p>
+        )}
       </div>
 
       <div className="flex justify-end gap-2 pt-2 border-t border-border mt-2">
