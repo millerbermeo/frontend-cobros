@@ -15,7 +15,6 @@ import {
   MdCallMade,
   MdBarChart,
   MdSettings,
-  MdAdminPanelSettings as MdUsers,
 } from 'react-icons/md'
 import type { IconType } from 'react-icons'
 import { useTheme } from '@/shared/hooks/useTheme'
@@ -31,7 +30,6 @@ const ROUTE_META: Record<string, { label: string; icon: IconType }> = {
   '/abonos':        { label: 'Abonos',                icon: MdPayment },
   '/retiros':       { label: 'Retiros',               icon: MdCallMade },
   '/reportes':      { label: 'Reportes',              icon: MdBarChart },
-  '/usuarios':      { label: 'Usuarios del Sistema',  icon: MdUsers },
   '/configuracion': { label: 'Configuración',         icon: MdSettings },
 }
 

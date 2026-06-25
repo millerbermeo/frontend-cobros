@@ -9,26 +9,20 @@ import {
   type CreateUsuarioValues,
   type EditUsuarioValues,
 } from '../schemas/usuario.schema'
-import type { RolUsuario, Usuario } from '../types/usuarios.types'
-
-const ROL_OPTIONS: { value: RolUsuario; label: string }[] = [
-  { value: 'Administrador', label: 'Administrador' },
-  { value: 'Supervisor',    label: 'Supervisor'    },
-  { value: 'Cobrador',      label: 'Cobrador'      },
-  { value: 'Auditor',       label: 'Auditor'       },
-]
+import type { Usuario } from '../types/usuarios.types'
 
 const SELECT_CLASS =
   'border border-border rounded-lg px-3 py-2 text-sm bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 w-full'
 
 interface UsuarioFormProps {
   usuario?: Usuario | null
+  roles: string[]
   onSuccess: (data: CreateUsuarioValues | EditUsuarioValues) => void
   onCancel: () => void
   isPending?: boolean
 }
 
-export function UsuarioForm({ usuario, onSuccess, onCancel, isPending }: UsuarioFormProps) {
+export function UsuarioForm({ usuario, roles, onSuccess, onCancel, isPending }: UsuarioFormProps) {
   const isEdit = !!usuario
 
   const createForm = useForm<CreateUsuarioValues>({
@@ -79,7 +73,7 @@ export function UsuarioForm({ usuario, onSuccess, onCancel, isPending }: Usuario
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium text-foreground">Rol <span className="text-danger">*</span></label>
             <select {...editForm.register('rol')} className={SELECT_CLASS}>
-              {ROL_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              {roles.map((r) => <option key={r} value={r}>{r}</option>)}
             </select>
             {editForm.formState.errors.rol && (
               <p className="text-xs text-danger">{editForm.formState.errors.rol.message}</p>
@@ -130,7 +124,7 @@ export function UsuarioForm({ usuario, onSuccess, onCancel, isPending }: Usuario
         <div className="flex flex-col gap-1">
           <label className="text-sm font-medium text-foreground">Rol <span className="text-danger">*</span></label>
           <select {...createForm.register('rol')} className={SELECT_CLASS}>
-            {ROL_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            {roles.map((r) => <option key={r} value={r}>{r}</option>)}
           </select>
           {createForm.formState.errors.rol && (
             <p className="text-xs text-danger">{createForm.formState.errors.rol.message}</p>

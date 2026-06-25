@@ -5,21 +5,22 @@ import { DataTable, type Column } from '@/shared/components/tables/DataTable'
 import { useModal } from '@/app/store/modal.store'
 import { alert } from '@/shared/utils/alert'
 import { cn } from '@/shared/utils/cn'
-import { useUsuarios, useSaveUsuario } from '../hooks/useUsuarios'
+import { useUsuarios, useCreateUsuario, useUpdateUsuario } from '../hooks/useUsuarios'
 import { UsuarioForm } from '../components/UsuarioForm'
-import type { RolUsuario, Usuario } from '../types/usuarios.types'
+import type { Usuario } from '../types/usuarios.types'
 import type { CreateUsuarioValues, EditUsuarioValues } from '../schemas/usuario.schema'
-
-const ROL_CONFIG: Record<RolUsuario, { className: string }> = {
-  Administrador: { className: 'text-violet-600 bg-violet-50 dark:bg-violet-500/15' },
-  Supervisor:    { className: 'text-blue-600   bg-blue-50   dark:bg-blue-500/15'   },
-  Cobrador:      { className: 'text-amber-600  bg-amber-50  dark:bg-amber-500/15'  },
-  Auditor:       { className: 'text-indigo-600 bg-indigo-50 dark:bg-indigo-500/15' },
-}
 
 const STATE_CONFIG: Record<number, { label: string; className: string; dot: string }> = {
   1: { label: 'Activo',   className: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-500/15', dot: 'bg-emerald-500'   },
   0: { label: 'Inactivo', className: 'text-foreground/40 bg-foreground/5',                    dot: 'bg-foreground/30' },
+}
+
+const ROL_COLORS: Record<string, string> = {
+  Administrador: 'text-violet-600 bg-violet-50 dark:bg-violet-500/15',
+  Supervisor:    'text-blue-600   bg-blue-50   dark:bg-blue-500/15',
+  Cobrador:      'text-amber-600  bg-amber-50  dark:bg-amber-500/15',
+  Auditor:       'text-indigo-600 bg-indigo-50 dark:bg-indigo-500/15',
+  Asesor:        'text-teal-600   bg-teal-50   dark:bg-teal-500/15',
 }
 
 const columns: Column<Record<string, unknown>>[] = [
@@ -47,9 +48,9 @@ const columns: Column<Record<string, unknown>>[] = [
     key: 'rol',
     label: 'Rol',
     render: (val) => {
-      const rol = val as RolUsuario
-      const cfg = ROL_CONFIG[rol] ?? { className: 'text-foreground/50 bg-foreground/5' }
-      return <span className={cn('text-xs font-semibold px-2.5 py-1 rounded-full', cfg.className)}>{rol}</span>
+      const rol = String(val)
+      const cls = ROL_COLORS[rol] ?? 'text-foreground/50 bg-foreground/5'
+      return <span className={cn('text-xs font-semibold px-2.5 py-1 rounded-full', cls)}>{rol}</span>
     },
   },
   {
@@ -70,41 +71,41 @@ const columns: Column<Record<string, unknown>>[] = [
 export function UsuariosPage() {
   const { open, close } = useModal()
   const [page, setPage] = useState(1)
-  const { data: usuarios = [], isLoading } = useUsuarios(page)
-  const { mutate: save, isPending } = useSaveUsuario()
+
+  const { data: response, isLoading } = useUsuarios(page)
+  const { mutate: createUsuario, isPending: isCreating } = useCreateUsuario()
+  const { mutate: updateUsuario, isPending: isUpdating } = useUpdateUsuario()
+
+  const usuarios   = response?.data       ?? []
+  const roles      = response?.roles      ?? []
+  const pagination = response?.pagination
 
   const handleCreate = (data: CreateUsuarioValues | EditUsuarioValues) => {
-    save(
-      { ...(data as CreateUsuarioValues) },
-      {
-        onSuccess: () => {
-          close()
-          alert.toast('Usuario creado correctamente')
-        },
-        onError: () => alert.toast('Error al crear el usuario', 'error'),
-      }
-    )
+    createUsuario(data as CreateUsuarioValues, {
+      onSuccess: () => { close(); alert.toast('Usuario creado correctamente') },
+      onError:   () => alert.toast('Error al crear el usuario', 'error'),
+    })
   }
 
   const handleEdit = (usuario: Usuario) => (data: CreateUsuarioValues | EditUsuarioValues) => {
-    const editData = data as EditUsuarioValues
-    save(
-      { id: usuario.id, ...editData },
-      {
-        onSuccess: () => {
-          close()
-          alert.toast('Usuario actualizado correctamente')
-        },
-        onError: () => alert.toast('Error al actualizar el usuario', 'error'),
-      }
-    )
+    updateUsuario({ id: usuario.id, data: data as EditUsuarioValues }, {
+      onSuccess: () => { close(); alert.toast('Usuario actualizado correctamente') },
+      onError:   () => alert.toast('Error al actualizar el usuario', 'error'),
+    })
   }
 
   const openCreate = () => {
     open({
       title: 'Nuevo usuario',
       size: 'sm',
-      content: <UsuarioForm onSuccess={handleCreate} onCancel={close} isPending={isPending} />,
+      content: (
+        <UsuarioForm
+          roles={roles}
+          onSuccess={handleCreate}
+          onCancel={close}
+          isPending={isCreating}
+        />
+      ),
     })
   }
 
@@ -115,9 +116,10 @@ export function UsuariosPage() {
       content: (
         <UsuarioForm
           usuario={usuario}
+          roles={roles}
           onSuccess={handleEdit(usuario)}
           onCancel={close}
-          isPending={isPending}
+          isPending={isUpdating}
         />
       ),
     })
@@ -143,34 +145,37 @@ export function UsuariosPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex items-center justify-between p-5 border-b border-border">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center">
+          <div className="w-9 h-9 rounded-xl bg-violet-500/10 flex items-center justify-center shrink-0">
             <MdAdminPanelSettings className="w-5 h-5 text-violet-500" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-foreground">Usuarios del Sistema</h1>
-            <p className="text-xs text-foreground/45">
-              {isLoading ? 'Cargando...' : `${usuarios.length} usuarios`}
+            <h2 className="text-sm font-semibold text-foreground">Usuarios del Sistema</h2>
+            <p className="text-xs text-foreground/50 mt-0.5">
+              {isLoading ? 'Cargando...' : `${pagination?.total ?? usuarios.length} usuarios registrados`}
             </p>
           </div>
         </div>
-        <Button variant="primary" onPress={openCreate} className="self-start sm:self-auto">
-          <MdPersonAdd className="w-4 h-4 mr-1" />
+        <Button variant="primary" onPress={openCreate} size="sm" className="gap-1.5">
+          <MdPersonAdd className="w-4 h-4" />
           Nuevo usuario
         </Button>
       </div>
 
       {/* Table */}
-      <div className="bg-card rounded-2xl border border-border shadow-sm p-5">
+      <div className="p-5">
         <DataTable
           columns={[...columns, actionColumn]}
           data={usuarios as unknown as Record<string, unknown>[]}
           rowKey="id"
           isLoading={isLoading}
-          currentPage={page}
+          currentPage={pagination?.current_page ?? page}
+          totalPages={pagination?.last_page ?? 1}
+          totalItems={pagination?.total}
+          pageSize={pagination?.per_page ?? 10}
           onPageChange={setPage}
           emptyMessage="No se encontraron usuarios"
         />

@@ -17,7 +17,6 @@ import {
   MdSettings,
   MdChevronLeft,
   MdAccountBalanceWallet,
-  MdAdminPanelSettings,
 } from 'react-icons/md'
 import { useTheme } from '@/shared/hooks/useTheme'
 import { useUserModules } from '@/features/auth/hooks/useAuth'
@@ -41,7 +40,6 @@ const NAV_ITEMS: NavItemConfig[] = [
   { label: 'Abonos',                 icon: MdPayment,           path: '/abonos',       moduleKey: 'Abonos'                 },
   { label: 'Retiros',                icon: MdCallMade,          path: '/retiros',      moduleKey: 'Retiros'                },
   { label: 'Reportes',               icon: MdBarChart,          path: '/reportes',     moduleKey: 'Reportes'               },
-  { label: 'Usuarios',               icon: MdAdminPanelSettings,path: '/usuarios',     moduleKey: 'Usuarios'               },
   { label: 'Configuración',          icon: MdSettings,          path: '/configuracion',moduleKey: 'Configuración'          },
 ]
 
