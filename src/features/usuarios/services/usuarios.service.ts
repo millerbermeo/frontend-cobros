@@ -2,10 +2,19 @@ import api from '@/lib/axios'
 import type { Usuario } from '../types/usuarios.types'
 import type { CreateUsuarioValues, EditUsuarioValues } from '../schemas/usuario.schema'
 
+export type SaveUsuarioPayload =
+  | ({ id?: never } & CreateUsuarioValues)
+  | ({ id: number } & EditUsuarioValues)
+
 export const usuariosService = {
-  getAll: () => api.get<Usuario[]>('/usuarios'),
-  getById: (id: string) => api.get<Usuario>(`/usuarios/${id}`),
-  create: (data: CreateUsuarioValues) => api.post<Usuario>('/usuarios', data),
-  update: (id: string, data: Partial<EditUsuarioValues>) => api.put<Usuario>(`/usuarios/${id}`, data),
-  delete: (id: string) => api.delete(`/usuarios/${id}`),
+  getAll: (page = 1) =>
+    api.get<Usuario[]>('/list/users', { params: { page } }),
+
+  save: (payload: SaveUsuarioPayload) => {
+    const body =
+      'pass' in payload && !payload.pass
+        ? (({ pass: _omit, ...rest }) => rest)(payload as Required<SaveUsuarioPayload>)
+        : payload
+    return api.put<Usuario>('/create/c_users', body)
+  },
 }

@@ -1,25 +1,21 @@
 import { z } from 'zod'
 
-export const createUsuarioSchema = z
-  .object({
-    nombre:          z.string().min(2, 'Mínimo 2 caracteres'),
-    username:        z.string().min(3, 'Mínimo 3 caracteres').optional().or(z.literal('')),
-    email:           z.email('Correo inválido'),
-    rol:             z.enum(['admin', 'cobrador', 'supervisor', 'auditor'], { message: 'Selecciona un rol' }),
-    password:        z.string().min(8, 'Mínimo 8 caracteres'),
-    confirmPassword: z.string(),
-  })
-  .refine((d) => d.password === d.confirmPassword, {
-    message: 'Las contraseñas no coinciden',
-    path: ['confirmPassword'],
-  })
+const ROL_VALUES = ['Administrador', 'Supervisor', 'Cobrador', 'Auditor'] as const
+
+export const createUsuarioSchema = z.object({
+  name:     z.string().min(2, 'Mínimo 2 caracteres'),
+  username: z.string().min(3, 'Mínimo 3 caracteres'),
+  pass:     z.string().min(6, 'Mínimo 6 caracteres'),
+  rol:      z.enum(ROL_VALUES, { message: 'Selecciona un rol' }),
+  state:    z.number().int(),
+})
 
 export const editUsuarioSchema = z.object({
-  nombre:   z.string().min(2, 'Mínimo 2 caracteres'),
-  username: z.string().min(3, 'Mínimo 3 caracteres').optional().or(z.literal('')),
-  email:    z.email('Correo inválido'),
-  rol:      z.enum(['admin', 'cobrador', 'supervisor', 'auditor']),
-  estado:   z.enum(['activo', 'inactivo']),
+  name:     z.string().min(2, 'Mínimo 2 caracteres'),
+  username: z.string().min(3, 'Mínimo 3 caracteres'),
+  pass:     z.string().min(6, 'Mínimo 6 caracteres').or(z.literal('')).optional(),
+  rol:      z.enum(ROL_VALUES, { message: 'Selecciona un rol' }),
+  state:    z.number().int(),
 })
 
 export type CreateUsuarioValues = z.infer<typeof createUsuarioSchema>

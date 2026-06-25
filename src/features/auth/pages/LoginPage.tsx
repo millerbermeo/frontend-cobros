@@ -2,16 +2,17 @@ import { useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@heroui/react'
-import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import axios from 'axios'
 import {
   MdLockOutline,
-  MdMailOutline,
+  MdPersonOutline,
   MdVisibility,
   MdVisibilityOff,
   MdArrowForward,
 } from 'react-icons/md'
 import { cn } from '@/shared/utils/cn'
+import { useLogin } from '../hooks/useAuth'
 import { loginSchema, type LoginFormValues } from '../schemas/auth.schema'
 
 const EASE = [0.4, 0, 0.2, 1] as [number, number, number, number]
@@ -24,22 +25,27 @@ const fadeUp = {
   }),
 }
 
-// TODO: restore real login when backend ready
+function getApiErrorMessage(error: unknown): string {
+  if (axios.isAxiosError(error)) {
+    return error.response?.data?.message ?? 'Usuario o contraseña incorrectos'
+  }
+  return 'Error al iniciar sesión. Intenta de nuevo.'
+}
+
 export function LoginPage() {
-  const navigate = useNavigate()
   const [showPwd, setShowPwd] = useState(false)
+  const { mutate: login, isPending, error } = useLogin()
 
   const {
     control,
     handleSubmit,
-    formState: { isSubmitting },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: '', password: '' },
+    defaultValues: { username: '', password: '' },
   })
 
-  const onSubmit = (_data: LoginFormValues) => {
-    navigate('/', { replace: true })
+  const onSubmit = (data: LoginFormValues) => {
+    login(data)
   }
 
   return (
@@ -57,7 +63,8 @@ export function LoginPage() {
         <div className="p-10">
           {/* Icon badge + heading */}
           <motion.div className="mb-8" variants={fadeUp} initial="hidden" animate="show" custom={0}>
-            <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center mb-5 shadow-lg shadow-indigo-500/30"
+            <div
+              className="w-13 h-13 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center mb-5 shadow-lg shadow-indigo-500/30"
               style={{ width: '3.25rem', height: '3.25rem' }}
             >
               <MdLockOutline className="w-6 h-6 text-white" />
@@ -71,23 +78,34 @@ export function LoginPage() {
           </motion.div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5" noValidate>
-            {/* Email */}
+            {/* Error banner */}
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-xl bg-danger/10 border border-danger/20 px-4 py-3 text-sm text-danger"
+              >
+                {getApiErrorMessage(error)}
+              </motion.div>
+            )}
+
+            {/* Username */}
             <motion.div variants={fadeUp} initial="hidden" animate="show" custom={1}>
               <Controller
-                name="email"
+                name="username"
                 control={control}
                 render={({ field, fieldState }) => (
                   <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-semibold text-indigo-500 uppercase tracking-widest">
-                      Correo electrónico
+                      Usuario
                     </label>
                     <div className="relative">
-                      <MdMailOutline className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-foreground/35 pointer-events-none" />
+                      <MdPersonOutline className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-foreground/35 pointer-events-none" />
                       <input
                         {...field}
-                        type="email"
-                        autoComplete="email"
-                        placeholder="correo@ejemplo.com"
+                        type="text"
+                        autoComplete="username"
+                        placeholder="nombre_usuario"
                         className={cn(
                           'w-full pl-11 pr-4 py-3 rounded-xl border bg-background',
                           'text-sm text-foreground placeholder:text-foreground/25',
@@ -156,36 +174,20 @@ export function LoginPage() {
               />
             </motion.div>
 
-            {/* Forgot password */}
-            <motion.div
-              className="flex justify-end -mt-2"
-              variants={fadeUp}
-              initial="hidden"
-              animate="show"
-              custom={3}
-            >
-              <button
-                type="button"
-                className="text-xs text-indigo-500 hover:text-indigo-400 transition-colors font-medium"
-              >
-                ¿Olvidaste tu contraseña?
-              </button>
-            </motion.div>
-
             {/* Submit */}
-            <motion.div variants={fadeUp} initial="hidden" animate="show" custom={4}>
+            <motion.div variants={fadeUp} initial="hidden" animate="show" custom={3}>
               <Button
                 type="submit"
                 variant="primary"
                 fullWidth
-                isDisabled={isSubmitting}
+                isDisabled={isPending}
                 className="h-12 font-semibold gap-2 text-base mt-1"
                 style={{
                   background: 'linear-gradient(135deg, #6366f1 0%, #7c3aed 100%)',
                 }}
               >
-                {isSubmitting ? 'Ingresando...' : 'Ingresar'}
-                {!isSubmitting && <MdArrowForward className="w-4 h-4" />}
+                {isPending ? 'Ingresando...' : 'Ingresar'}
+                {!isPending && <MdArrowForward className="w-4 h-4" />}
               </Button>
             </motion.div>
           </form>
@@ -198,7 +200,7 @@ export function LoginPage() {
         variants={fadeUp}
         initial="hidden"
         animate="show"
-        custom={5}
+        custom={4}
       >
         ¿Problemas para acceder? Contacta al administrador
       </motion.p>

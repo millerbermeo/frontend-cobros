@@ -20,27 +20,29 @@ import {
   MdAdminPanelSettings,
 } from 'react-icons/md'
 import { useTheme } from '@/shared/hooks/useTheme'
+import { useUserModules } from '@/features/auth/hooks/useAuth'
 import { cn } from '@/shared/utils/cn'
 
 interface NavItemConfig {
   label: string
   icon: IconType
   path: string
+  moduleKey: string
   end?: boolean
 }
 
 const NAV_ITEMS: NavItemConfig[] = [
-  { label: 'Dashboard', icon: MdDashboard, path: '/', end: true },
-  { label: 'Clientes', icon: MdPeople, path: '/clientes' },
-  { label: 'Solicitudes de Crédito', icon: MdAssignment, path: '/solicitudes' },
-  { label: 'Aprobaciones', icon: MdCheckCircle, path: '/aprobaciones' },
-  { label: 'Contratos', icon: MdDescription, path: '/contratos' },
-  { label: 'Cobranza', icon: MdAccountBalance, path: '/cobranza' },
-  { label: 'Abonos', icon: MdPayment, path: '/abonos' },
-  { label: 'Retiros', icon: MdCallMade, path: '/retiros' },
-  { label: 'Reportes', icon: MdBarChart, path: '/reportes' },
-  { label: 'Usuarios', icon: MdAdminPanelSettings, path: '/usuarios' },
-  { label: 'Configuración', icon: MdSettings, path: '/configuracion' },
+  { label: 'Dashboard',              icon: MdDashboard,         path: '/',             moduleKey: 'Dashboard',               end: true },
+  { label: 'Clientes',               icon: MdPeople,            path: '/clientes',     moduleKey: 'Clientes'               },
+  { label: 'Solicitudes de Crédito', icon: MdAssignment,        path: '/solicitudes',  moduleKey: 'Solicitudes de Crédito' },
+  { label: 'Aprobaciones',           icon: MdCheckCircle,       path: '/aprobaciones', moduleKey: 'Aprobaciones'           },
+  { label: 'Contratos',              icon: MdDescription,       path: '/contratos',    moduleKey: 'Contratos'              },
+  { label: 'Cobranza',               icon: MdAccountBalance,    path: '/cobranza',     moduleKey: 'Cobranza'               },
+  { label: 'Abonos',                 icon: MdPayment,           path: '/abonos',       moduleKey: 'Abonos'                 },
+  { label: 'Retiros',                icon: MdCallMade,          path: '/retiros',      moduleKey: 'Retiros'                },
+  { label: 'Reportes',               icon: MdBarChart,          path: '/reportes',     moduleKey: 'Reportes'               },
+  { label: 'Usuarios',               icon: MdAdminPanelSettings,path: '/usuarios',     moduleKey: 'Usuarios'               },
+  { label: 'Configuración',          icon: MdSettings,          path: '/configuracion',moduleKey: 'Configuración'          },
 ]
 
 const SIDEBAR_GRADIENT = 'linear-gradient(145deg, #4f46e5 0%, #6366f1 40%, #8b5cf6 100%)'
@@ -113,6 +115,11 @@ interface SidebarContentProps {
 }
 
 function SidebarContent({ collapsed, onNav, showToggle, expanded, onToggle, onClose }: SidebarContentProps) {
+  const modules = useUserModules()
+  const visibleItems = modules.length > 0
+    ? NAV_ITEMS.filter((item) => modules.includes(item.moduleKey))
+    : NAV_ITEMS
+
   return (
     <div className="flex flex-col h-full">
       {/* Logo */}
@@ -152,7 +159,7 @@ function SidebarContent({ collapsed, onNav, showToggle, expanded, onToggle, onCl
       {/* Nav items */}
       <nav className="flex-1 py-3 overflow-y-auto overflow-x-hidden">
         <ul className={cn('space-y-0.5', collapsed ? 'px-0' : 'px-3')}>
-          {NAV_ITEMS.map((item) => (
+          {visibleItems.map((item) => (
             <NavItem key={item.path} item={item} collapsed={collapsed} onNav={onNav} />
           ))}
         </ul>

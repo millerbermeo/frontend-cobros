@@ -9,18 +9,13 @@ import {
   type CreateUsuarioValues,
   type EditUsuarioValues,
 } from '../schemas/usuario.schema'
-import type { Usuario, RolUsuario, EstadoUsuario } from '../types/usuarios.types'
+import type { RolUsuario, Usuario } from '../types/usuarios.types'
 
 const ROL_OPTIONS: { value: RolUsuario; label: string }[] = [
-  { value: 'admin',      label: 'Administrador' },
-  { value: 'supervisor', label: 'Supervisor'    },
-  { value: 'cobrador',   label: 'Cobrador'      },
-  { value: 'auditor',    label: 'Auditor'       },
-]
-
-const ESTADO_OPTIONS: { value: EstadoUsuario; label: string }[] = [
-  { value: 'activo',   label: 'Activo'   },
-  { value: 'inactivo', label: 'Inactivo' },
+  { value: 'Administrador', label: 'Administrador' },
+  { value: 'Supervisor',    label: 'Supervisor'    },
+  { value: 'Cobrador',      label: 'Cobrador'      },
+  { value: 'Auditor',       label: 'Auditor'       },
 ]
 
 const SELECT_CLASS =
@@ -30,29 +25,30 @@ interface UsuarioFormProps {
   usuario?: Usuario | null
   onSuccess: (data: CreateUsuarioValues | EditUsuarioValues) => void
   onCancel: () => void
+  isPending?: boolean
 }
 
-export function UsuarioForm({ usuario, onSuccess, onCancel }: UsuarioFormProps) {
+export function UsuarioForm({ usuario, onSuccess, onCancel, isPending }: UsuarioFormProps) {
   const isEdit = !!usuario
 
   const createForm = useForm<CreateUsuarioValues>({
     resolver: zodResolver(createUsuarioSchema),
-    defaultValues: { nombre: '', username: '', email: '', rol: 'cobrador', password: '', confirmPassword: '' },
+    defaultValues: { name: '', username: '', pass: '', rol: 'Cobrador', state: 1 },
   })
 
   const editForm = useForm<EditUsuarioValues>({
     resolver: zodResolver(editUsuarioSchema),
-    defaultValues: { nombre: '', username: '', email: '', rol: 'cobrador', estado: 'activo' },
+    defaultValues: { name: '', username: '', pass: '', rol: 'Cobrador', state: 1 },
   })
 
   useEffect(() => {
     if (usuario) {
       editForm.reset({
-        nombre:   usuario.nombre,
-        username: usuario.username ?? '',
-        email:    usuario.email,
+        name:     usuario.name,
+        username: usuario.username,
+        pass:     '',
         rol:      usuario.rol,
-        estado:   usuario.estado,
+        state:    usuario.state,
       })
     } else {
       createForm.reset()
@@ -63,29 +59,49 @@ export function UsuarioForm({ usuario, onSuccess, onCancel }: UsuarioFormProps) 
     return (
       <form onSubmit={editForm.handleSubmit(onSuccess)} className="flex flex-col gap-4">
         <div className="grid grid-cols-2 gap-3">
-          <FormInput<EditUsuarioValues> name="nombre"   control={editForm.control} label="Nombre"   placeholder="Juan"       isRequired />
-          <FormInput<EditUsuarioValues> name="username" control={editForm.control} label="Username" placeholder="juan123"             />
+          <FormInput<EditUsuarioValues>
+            name="name" control={editForm.control}
+            label="Nombre" placeholder="Juan Pérez" isRequired
+          />
+          <FormInput<EditUsuarioValues>
+            name="username" control={editForm.control}
+            label="Username" placeholder="juan123" isRequired
+          />
         </div>
-        <FormInput<EditUsuarioValues> name="email" control={editForm.control} label="Correo electrónico" placeholder="usuario@cobros.com" type="email" isRequired />
+
+        <FormInput<EditUsuarioValues>
+          name="pass" control={editForm.control}
+          label="Contraseña" placeholder="Dejar vacío para no cambiar"
+          type="password"
+        />
 
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-foreground">Rol</label>
+            <label className="text-sm font-medium text-foreground">Rol <span className="text-danger">*</span></label>
             <select {...editForm.register('rol')} className={SELECT_CLASS}>
               {ROL_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
+            {editForm.formState.errors.rol && (
+              <p className="text-xs text-danger">{editForm.formState.errors.rol.message}</p>
+            )}
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-foreground">Estado</label>
-            <select {...editForm.register('estado')} className={SELECT_CLASS}>
-              {ESTADO_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            <label className="text-sm font-medium text-foreground">Estado <span className="text-danger">*</span></label>
+            <select
+              {...editForm.register('state', { valueAsNumber: true })}
+              className={SELECT_CLASS}
+            >
+              <option value={1}>Activo</option>
+              <option value={0}>Inactivo</option>
             </select>
           </div>
         </div>
 
         <div className="flex justify-end gap-2 pt-2 border-t border-border mt-2">
-          <Button type="button" variant="ghost" onPress={onCancel}>Cancelar</Button>
-          <Button type="submit" variant="primary">Guardar cambios</Button>
+          <Button type="button" variant="ghost" onPress={onCancel} isDisabled={isPending}>Cancelar</Button>
+          <Button type="submit" variant="primary" isDisabled={isPending}>
+            {isPending ? 'Guardando...' : 'Guardar cambios'}
+          </Button>
         </div>
       </form>
     )
@@ -94,26 +110,49 @@ export function UsuarioForm({ usuario, onSuccess, onCancel }: UsuarioFormProps) 
   return (
     <form onSubmit={createForm.handleSubmit(onSuccess)} className="flex flex-col gap-4">
       <div className="grid grid-cols-2 gap-3">
-        <FormInput<CreateUsuarioValues> name="nombre"   control={createForm.control} label="Nombre"   placeholder="Juan"   isRequired />
-        <FormInput<CreateUsuarioValues> name="username" control={createForm.control} label="Username" placeholder="juan123"          />
+        <FormInput<CreateUsuarioValues>
+          name="name" control={createForm.control}
+          label="Nombre" placeholder="Juan Pérez" isRequired
+        />
+        <FormInput<CreateUsuarioValues>
+          name="username" control={createForm.control}
+          label="Username" placeholder="juan123" isRequired
+        />
       </div>
-      <FormInput<CreateUsuarioValues> name="email" control={createForm.control} label="Correo electrónico" placeholder="usuario@cobros.com" type="email" isRequired />
 
-      <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-foreground">Rol</label>
-        <select {...createForm.register('rol')} className={SELECT_CLASS}>
-          {ROL_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-        </select>
-      </div>
+      <FormInput<CreateUsuarioValues>
+        name="pass" control={createForm.control}
+        label="Contraseña" placeholder="Mínimo 6 caracteres"
+        type="password" isRequired
+      />
 
       <div className="grid grid-cols-2 gap-3">
-        <FormInput<CreateUsuarioValues> name="password"        control={createForm.control} label="Contraseña"          placeholder="Mínimo 8 caracteres" type="password" isRequired />
-        <FormInput<CreateUsuarioValues> name="confirmPassword" control={createForm.control} label="Confirmar contraseña" placeholder="Repite la contraseña" type="password" isRequired />
+        <div className="flex flex-col gap-1">
+          <label className="text-sm font-medium text-foreground">Rol <span className="text-danger">*</span></label>
+          <select {...createForm.register('rol')} className={SELECT_CLASS}>
+            {ROL_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </select>
+          {createForm.formState.errors.rol && (
+            <p className="text-xs text-danger">{createForm.formState.errors.rol.message}</p>
+          )}
+        </div>
+        <div className="flex flex-col gap-1">
+          <label className="text-sm font-medium text-foreground">Estado <span className="text-danger">*</span></label>
+          <select
+            {...createForm.register('state', { valueAsNumber: true })}
+            className={SELECT_CLASS}
+          >
+            <option value={1}>Activo</option>
+            <option value={0}>Inactivo</option>
+          </select>
+        </div>
       </div>
 
       <div className="flex justify-end gap-2 pt-2 border-t border-border mt-2">
-        <Button type="button" variant="ghost" onPress={onCancel}>Cancelar</Button>
-        <Button type="submit" variant="primary">Crear usuario</Button>
+        <Button type="button" variant="ghost" onPress={onCancel} isDisabled={isPending}>Cancelar</Button>
+        <Button type="submit" variant="primary" isDisabled={isPending}>
+          {isPending ? 'Creando...' : 'Crear usuario'}
+        </Button>
       </div>
     </form>
   )

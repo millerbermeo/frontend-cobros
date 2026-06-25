@@ -30,6 +30,7 @@ src/
     pages/        # NotFoundPage
     providers/    # AppProviders (QueryClient + GlobalModal + axios interceptor)
     store/        # app.store (theme), modal.store (global modal)
+    themes/       # theme.config.ts — HeroUI color tokens
   features/       # one folder per domain module
     auth/
     dashboard/
@@ -45,7 +46,9 @@ src/
     configuracion/
   lib/
     axios.ts      # configured Axios instance, VITE_API_URL base URL, Bearer token helper
+    pdf.ts        # re-exports react-pdf + pdf-lib with worker configured
     react-query.ts
+    zustand.ts    # re-exports create, devtools, persist, StateCreator
   routes/
     index.tsx     # single createBrowserRouter, all routes here
   shared/
@@ -54,9 +57,10 @@ src/
       tables/     # DataTable (search, sort, pagination built-in)
       loaders/    # Spinner
       GlobalModal.tsx
+    helpers/      # storage.helper (localStorage wrapper)
     hooks/        # useTheme, useDebounce, usePagination
-    styles/
-    utils/        # cn (clsx + twMerge)
+    types/        # api.types (ApiResponse, ApiError, PaginatedResponse)
+    utils/        # cn (clsx + twMerge), alert (SweetAlert2 wrapper)
 ```
 
 ### Feature module convention
@@ -88,7 +92,7 @@ To add a route: import the page, add `{ path: 'x', element: <XPage /> }` in Main
 ### Global state
 
 - **Theme** — `useAppStore` (Zustand + persist). Writes `dark` class to `<html>`.
-- **Auth** — `useAuthStore` (Zustand + persist). Stores user + JWT token, sets Axios Authorization header.
+- **Auth** — `useAuthStore` (Zustand + persist). Stores user + JWT token, sets Axios Authorization header on rehydration.
 - **Global Modal** — `useModalStore` (Zustand). Call `useModal()` → `{ open, close }`.
 
 ### Global Modal usage
@@ -117,6 +121,50 @@ open({
 
 GlobalModal renders via `createPortal` into `document.body` — no HeroUI Modal dependency.
 
+### Alert / toast utility
+
+SweetAlert2 wrapper at `@/shared/utils/alert`. Use instead of `window.alert` or raw Swal calls.
+
+```tsx
+import { alert } from '@/shared/utils/alert'
+
+alert.toast('Guardado correctamente')           // success toast, 3 s
+alert.toast('No se pudo conectar', 'error')
+alert.success('Título', 'Texto opcional')
+alert.error('Error', 'Descripción')
+alert.confirm('¿Eliminar?', {
+  text: 'No se puede deshacer',
+  onConfirm: () => deleteItem(id),
+})
+```
+
+### Shared form components
+
+All form components in `@/shared/components/forms/` wrap HeroUI v3 compound fields with `react-hook-form`'s `Controller`. They accept `control` + `name` (not `register`).
+
+```tsx
+import { FormInput } from '@/shared/components/forms'
+
+<FormInput<MyFormValues>
+  name="correo"
+  control={control}
+  label="Correo"
+  placeholder="usuario@ejemplo.com"
+  type="email"
+  isRequired
+/>
+```
+
+### API response types
+
+Services return axios responses wrapping these shapes from `@/shared/types/api.types`:
+
+```ts
+interface ApiResponse<T>     { data: T; message?: string; success: boolean }
+interface PaginatedResponse<T> { data: T[]; total: number; page: number; pageSize: number; totalPages: number }
+interface ApiError           { message: string; errors?: Record<string, string[]>; statusCode: number }
+```
+
 ### HeroUI v3 — critical API differences from v2
 
 HeroUI v3 uses **compound components**. Wrong patterns will silently fail or error.
@@ -132,6 +180,13 @@ HeroUI v3 uses **compound components**. Wrong patterns will silently fail or err
 <Avatar size="sm" className="bg-primary">
   <Avatar.Fallback className="text-white text-xs font-semibold">JD</Avatar.Fallback>
 </Avatar>
+
+// TextField (used inside shared form components)
+<TextField isInvalid={!!error} isRequired>
+  <Label>Campo</Label>
+  <Input placeholder="..." />
+  <FieldError>{error?.message}</FieldError>
+</TextField>
 
 // Button variants (valid): "primary" | "outline" | "danger" | "danger-soft" | "ghost" | "secondary" | "tertiary"
 // "light" does NOT exist — use "ghost"
@@ -156,10 +211,14 @@ Use `cn()` from `@/shared/utils/cn` for conditional class merging.
 
 `VITE_API_URL` env var sets the base URL. All requests go through `src/lib/axios.ts`. The `AppProviders` sets up a 401 interceptor that auto-logouts. Each feature's `services/` file uses `import api from '@/lib/axios'` directly.
 
+### PDF utilities
+
+`@/lib/pdf` re-exports both `react-pdf` (viewer: `Document`, `Page`, `pdfjs`) and `pdf-lib` (`PDFDocument`, `StandardFonts`, `rgb`) with the worker already configured. Import from there, not directly from the packages.
+
 ### Auth status
 
 `AuthGuard` is currently a passthrough (`<Outlet />`). Real auth guard pending backend readiness.
 
 ### Static / mock data
 
-Several modules (dashboard, usuarios) use in-memory mock data with `useState` for CRUD while the backend endpoints for those routes aren't implemented yet. Service files exist and are ready to wire up.
+Several modules (dashboard, clientes, usuarios) use in-memory mock data while backend endpoints aren't ready. Service files exist and are ready to wire up. Mock data lives in `features/<name>/data/<name>.mock.ts`.
