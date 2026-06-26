@@ -1,0 +1,16 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "buildCommand": "pnpm build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "http://indoor-qvmdkkckkpc.dynamic-m.com:8735/back/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
