@@ -52,7 +52,7 @@ export function SolicitudesRecientes() {
           return (
             <li
               key={item.id}
-              className="flex items-center gap-3 px-5 py-3.5 hover:bg-foreground/[0.02] transition-colors"
+              className="flex items-center gap-3 px-5 py-3.5 hover:bg-foreground/2 transition-colors"
             >
               {/* Avatar */}
               <div className="w-8 h-8 rounded-full bg-violet-500/10 flex items-center justify-center shrink-0">

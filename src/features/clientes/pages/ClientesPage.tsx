@@ -1,152 +1,145 @@
 import { useState, useMemo } from 'react'
+import { isAxiosError } from 'axios'
 import { Button } from '@heroui/react'
-import { MdPersonAdd, MdPeople, MdDelete } from 'react-icons/md'
+import { MdPersonAdd, MdPeople, MdSearch, MdInsertDriveFile } from 'react-icons/md'
 import { useModal } from '@/app/store/modal.store'
 import { alert } from '@/shared/utils/alert'
+import { useDebounce } from '@/shared/hooks/useDebounce'
 import { DataTable, type Column } from '@/shared/components/tables/DataTable'
-import { usePagination } from '@/shared/hooks/usePagination'
 import { ClientesLayout } from '../layouts/ClientesLayout'
 import { ClienteForm } from '../components/ClienteForm'
-import { useCreateCliente } from '../hooks/useClientes'
-import { MOCK_CLIENTES } from '../data/clientes.mock'
-import type { Cliente, TipoIdentificacion } from '../types/clientes.types'
+import { useCustomers, useCreateCliente } from '../hooks/useClientes'
+import { customerFileUrl } from '../services/clientes.service'
+import type { Customer } from '../types/clientes.types'
 import type { ClienteFormValues } from '../schemas/cliente.schema'
-
-const TIPO_ID_LABEL: Record<TipoIdentificacion, string> = {
-  cedula:             'CC',
-  cedula_extranjeria: 'CE',
-  pasaporte:          'PA',
-  nit:                'NIT',
-  tarjeta_identidad:  'TI',
-}
 
 const columns: Column<Record<string, unknown>>[] = [
   {
-    key: 'nombre',
+    key: 'name',
     label: 'Cliente',
-    sortable: true,
     render: (_, row) => {
-      const c = row as unknown as Cliente
-      const initials = (c.nombre[0] + (c.apellidos[0] ?? '')).toUpperCase()
+      const c = row as unknown as Customer
+      const initials = c.name
+        .split(' ')
+        .slice(0, 2)
+        .map((p) => p[0])
+        .join('')
+        .toUpperCase()
       return (
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
             <span className="text-[11px] font-bold text-primary">{initials}</span>
           </div>
           <div>
-            <p className="text-sm font-medium text-foreground">{c.nombre} {c.apellidos}</p>
-            <p className="text-xs text-foreground/40">{c.correo ?? '—'}</p>
+            <p className="text-sm font-medium text-foreground">{c.name}</p>
+            <p className="text-xs text-foreground/40">{c.email || '—'}</p>
           </div>
         </div>
       )
     },
   },
   {
-    key: 'numeroIdentificacion',
-    label: 'Identificación',
-    render: (_, row) => {
-      const c = row as unknown as Cliente
-      return (
-        <span className="text-sm text-foreground">
-          <span className="text-xs font-semibold text-primary mr-1">
-            {TIPO_ID_LABEL[c.tipoIdentificacion]}
-          </span>
-          {c.numeroIdentificacion}
-        </span>
-      )
-    },
-  },
-  {
-    key: 'telefono',
-    label: 'Teléfono',
+    key: 'document',
+    label: 'Documento',
     render: (val) => <span className="text-sm text-foreground">{String(val)}</span>,
   },
   {
-    key: 'tipoTrabajo',
-    label: 'Trabajo',
+    key: 'phone',
+    label: 'Teléfono',
     render: (_, row) => {
-      const c = row as unknown as Cliente
+      const c = row as unknown as Customer
       return (
         <div>
-          <p className="text-sm text-foreground">{c.tipoTrabajo}</p>
-          <p className="text-xs text-foreground/40">{c.entidadTrabajo}</p>
+          <p className="text-sm text-foreground">{c.phone}</p>
+          {c.additional_phone && <p className="text-xs text-foreground/40">{c.additional_phone}</p>}
         </div>
       )
     },
   },
   {
-    key: 'createdAt',
-    label: 'Registrado',
-    sortable: true,
-    render: (val) => (
-      <span className="text-xs text-foreground/50">
-        {new Date(val as string).toLocaleDateString('es-CO', {
-          day: '2-digit', month: 'short', year: 'numeric',
-        })}
-      </span>
-    ),
+    key: 'type_work',
+    label: 'Trabajo',
+    render: (_, row) => {
+      const c = row as unknown as Customer
+      return (
+        <div>
+          <p className="text-sm text-foreground">{c.type_work}</p>
+          <p className="text-xs text-foreground/40">{c.employing_entity}</p>
+        </div>
+      )
+    },
+  },
+  {
+    key: 'url_source_of_income',
+    label: 'Soporte',
+    render: (val) => {
+      const url = customerFileUrl(val as string)
+      if (!url) return <span className="text-xs text-foreground/30">—</span>
+      return (
+        <a
+          href={url}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+        >
+          <MdInsertDriveFile className="w-4 h-4" />
+          Ver
+        </a>
+      )
+    },
   },
 ]
+
+const FILTER_INPUT_CLASS =
+  'w-full sm:w-48 pl-9 pr-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary'
 
 export function ClientesPage() {
   const { open, close } = useModal()
   const createCliente = useCreateCliente()
-  const [clientes, setClientes] = useState<Cliente[]>(MOCK_CLIENTES)
-  const { params, setPage, setPageSize, setSearch } = usePagination()
-  const [sortKey, setSortKey] = useState<string>('')
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
 
-  const filtered = useMemo(() => {
-    const q = (params.search ?? '').toLowerCase()
-    let list = q
-      ? clientes.filter((c) =>
-          c.nombre.toLowerCase().includes(q) ||
-          c.apellidos.toLowerCase().includes(q) ||
-          c.numeroIdentificacion.includes(q) ||
-          (c.correo ?? '').toLowerCase().includes(q) ||
-          c.entidadTrabajo.toLowerCase().includes(q)
-        )
-      : clientes
+  const [page, setPage] = useState(1)
+  const [perPage, setPerPage] = useState(10)
+  const [documentInput, setDocumentInput] = useState('')
+  const [nameInput, setNameInput] = useState('')
 
-    if (sortKey) {
-      list = [...list].sort((a, b) => {
-        const av = String((a as unknown as Record<string, unknown>)[sortKey] ?? '')
-        const bv = String((b as unknown as Record<string, unknown>)[sortKey] ?? '')
-        return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av)
-      })
-    }
+  const document = useDebounce(documentInput, 400)
+  const name = useDebounce(nameInput, 400)
 
-    return list
-  }, [clientes, params.search, sortKey, sortDir])
+  const params = useMemo(
+    () => ({
+      page,
+      per_page: perPage,
+      ...(document ? { document } : {}),
+      ...(name ? { name } : {}),
+    }),
+    [page, perPage, document, name],
+  )
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / params.pageSize))
-  const safePage = Math.min(params.page, totalPages)
-  const paginated = filtered.slice((safePage - 1) * params.pageSize, safePage * params.pageSize)
+  const { data, isLoading, isFetching } = useCustomers(params)
 
-  const handleCreate = async (data: ClienteFormValues) => {
+  // El backend devuelve `data` como array (listado) o como objeto único
+  // (cuando el filtro por document encuentra 1 resultado) y sin `pagination`.
+  const raw = data?.data
+  const customers = Array.isArray(raw) ? raw : raw ? [raw] : []
+  const pag = data?.pagination
+  const total = Number(pag?.total ?? customers.length)
+  const totalPages = pag?.last_page ?? 1
+  const currentPage = pag?.current_page ?? page
+
+  const resetTo = (setter: (v: string) => void) => (v: string) => {
+    setter(v)
+    setPage(1)
+  }
+
+  const handleCreate = async (formData: ClienteFormValues) => {
     try {
-      const res = await createCliente.mutateAsync(data)
-      const nuevo: Cliente = {
-        id: String(res.data.id),
-        nombre: data.name,
-        apellidos: '',
-        tipoIdentificacion: 'cedula',
-        numeroIdentificacion: data.document,
-        direccion: data.address,
-        telefono: data.phone,
-        correo: data.email || undefined,
-        recomendadoPor: data.recommended || undefined,
-        telefonoAdicional: data.additional_phone || undefined,
-        tipoTrabajo: data.type_work,
-        entidadTrabajo: data.employing_entity,
-        fuenteIngresos: data.source_of_income || undefined,
-        createdAt: new Date().toISOString().slice(0, 10),
-      }
-      setClientes((prev) => [nuevo, ...prev])
+      const res = await createCliente.mutateAsync(formData)
       close()
       alert.toast(res.data.message || 'Cliente creado')
-    } catch {
-      alert.error('Error', 'No se pudo crear el cliente')
+      setPage(1)
+    } catch (err) {
+      const data = isAxiosError(err) ? (err.response?.data as { error?: string; message?: string }) : undefined
+      alert.error('Error', data?.error || data?.message || 'No se pudo crear el cliente')
     }
   }
 
@@ -158,49 +151,30 @@ export function ClientesPage() {
     })
   }
 
-  const openDelete = (c: Cliente) => {
-    open({
-      title: 'Eliminar cliente',
-      size: 'xs',
-      content: (
-        <p className="text-sm text-foreground/70">
-          ¿Eliminar a <span className="font-semibold text-foreground">{c.nombre} {c.apellidos}</span>?
-          {' '}Esta acción no se puede deshacer.
-        </p>
-      ),
-      actions: [
-        { label: 'Cancelar', onPress: close, variant: 'ghost' },
-        {
-          label: 'Eliminar',
-          variant: 'danger',
-          onPress: () => { setClientes((prev) => prev.filter((x) => x.id !== c.id)); close() },
-        },
-      ],
-    })
-  }
-
-  const actionColumn: Column<Record<string, unknown>> = {
-    key: 'id',
-    label: 'Acciones',
-    render: (_, row) => {
-      const c = row as unknown as Cliente
-      return (
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" isIconOnly size="sm"
-            className="text-foreground/50 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10"
-            onPress={() => openDelete(c)}
-          >
-            <MdDelete className="w-4 h-4" />
-          </Button>
-        </div>
-      )
-    },
-  }
-
-  const handleSort = (key: string, dir: 'asc' | 'desc') => {
-    setSortKey(key)
-    setSortDir(dir)
-  }
+  const filters = (
+    <>
+      <div className="relative">
+        <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-muted w-4 h-4" />
+        <input
+          type="text"
+          value={documentInput}
+          onChange={(e) => resetTo(setDocumentInput)(e.target.value)}
+          placeholder="Documento..."
+          className={FILTER_INPUT_CLASS}
+        />
+      </div>
+      <div className="relative">
+        <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-muted w-4 h-4" />
+        <input
+          type="text"
+          value={nameInput}
+          onChange={(e) => resetTo(setNameInput)(e.target.value)}
+          placeholder="Nombre..."
+          className={FILTER_INPUT_CLASS}
+        />
+      </div>
+    </>
+  )
 
   return (
     <ClientesLayout>
@@ -211,7 +185,7 @@ export function ClientesPage() {
           </div>
           <div>
             <h1 className="text-lg font-bold text-foreground">Clientes</h1>
-            <p className="text-xs text-foreground/45">{clientes.length} clientes registrados</p>
+            <p className="text-xs text-foreground/45">{total} clientes registrados</p>
           </div>
         </div>
         <Button variant="primary" onPress={openCreate} className="self-start sm:self-auto">
@@ -222,21 +196,17 @@ export function ClientesPage() {
 
       <div className="bg-card rounded-2xl border border-border shadow-sm p-5">
         <DataTable
-          columns={[...columns, actionColumn]}
-          data={paginated as unknown as Record<string, unknown>[]}
+          columns={columns}
+          data={customers as unknown as Record<string, unknown>[]}
           rowKey="id"
-          searchValue={params.search ?? ''}
-          onSearchChange={(v) => { setSearch(v); setPage(1) }}
-          searchPlaceholder="Buscar por nombre, identificación, correo o empresa..."
-          currentPage={safePage}
+          isLoading={isLoading || isFetching}
+          filtersComponent={filters}
+          currentPage={currentPage}
           totalPages={totalPages}
-          totalItems={filtered.length}
-          pageSize={params.pageSize}
+          totalItems={total}
+          pageSize={perPage}
           onPageChange={setPage}
-          onPageSizeChange={setPageSize}
-          sortKey={sortKey}
-          sortDirection={sortDir}
-          onSort={handleSort}
+          onPageSizeChange={(s) => { setPerPage(s); setPage(1) }}
           emptyMessage="No se encontraron clientes"
         />
       </div>
