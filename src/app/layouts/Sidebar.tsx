@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
 import { Tooltip } from '@heroui/react'
 import type { IconType } from 'react-icons'
 import {
@@ -63,7 +62,7 @@ function NavItem({ item, collapsed, onNav }: NavItemProps) {
       onClick={onNav}
       className={({ isActive }) =>
         cn(
-          'flex items-center gap-3 rounded-xl transition-all duration-150 select-none outline-none',
+          'flex items-center gap-3 rounded-xl transition-all duration-150 select-none outline-none overflow-hidden',
           collapsed ? 'h-10 w-10 justify-center' : 'h-10 px-3 w-full',
           isActive
             ? 'bg-white/25 text-white shadow-sm'
@@ -72,20 +71,11 @@ function NavItem({ item, collapsed, onNav }: NavItemProps) {
       }
     >
       <Icon className="w-4.5 h-4.5 shrink-0" />
-      <AnimatePresence>
-        {!collapsed && (
-          <motion.span
-            key="label"
-            initial={{ opacity: 0, x: -6 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -6 }}
-            transition={{ duration: 0.15 }}
-            className="text-sm font-medium truncate whitespace-nowrap"
-          >
-            {label}
-          </motion.span>
-        )}
-      </AnimatePresence>
+      {!collapsed && (
+        <span className="text-sm font-medium truncate whitespace-nowrap">
+          {label}
+        </span>
+      )}
     </NavLink>
   )
 
@@ -132,23 +122,15 @@ function SidebarContent({ collapsed, onNav, showToggle, expanded, onToggle, onCl
         <div className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center shrink-0">
           <MdAccountBalanceWallet className="w-4.5 h-4.5 text-white" />
         </div>
-        <AnimatePresence>
-          {!collapsed && (
-            <motion.span
-              key="brand"
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -8 }}
-              transition={{ duration: 0.2 }}
-              className="text-base font-bold text-white whitespace-nowrap flex-1"
-            >
-              Cobros
-            </motion.span>
-          )}
-        </AnimatePresence>
+        {!collapsed && (
+          <span className="text-base font-bold text-white whitespace-nowrap flex-1">
+            Cobros
+          </span>
+        )}
         {onClose && !collapsed && (
           <button
             onClick={onClose}
+            aria-label="Cerrar menú"
             className="p-1 rounded-lg hover:bg-white/10 text-white/60 transition-colors shrink-0"
           >
             <MdClose className="w-5 h-5" />
@@ -170,11 +152,15 @@ function SidebarContent({ collapsed, onNav, showToggle, expanded, onToggle, onCl
         <div className="p-2 border-t border-white/20 shrink-0">
           <button
             onClick={onToggle}
+            aria-label={expanded ? 'Colapsar menú' : 'Expandir menú'}
             className="w-full h-8 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors text-white/50 hover:text-white/80"
           >
-            <motion.div animate={{ rotate: expanded ? 0 : 180 }} transition={{ duration: 0.2 }}>
-              <MdChevronLeft className="w-5 h-5" />
-            </motion.div>
+            <MdChevronLeft
+              className={cn(
+                'w-5 h-5 transition-transform duration-200',
+                !expanded && 'rotate-180'
+              )}
+            />
           </button>
         </div>
       )}
@@ -196,12 +182,13 @@ export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
   return (
     <>
       {/* Desktop */}
-      <motion.aside
-        initial={false}
-        animate={{ width: desktopExpanded ? 260 : 72 }}
-        transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+      <aside
         className="hidden md:flex flex-col bg-card border-r border-border shrink-0 overflow-hidden z-20"
-        style={gradientStyle}
+        style={{
+          width: desktopExpanded ? 260 : 72,
+          transition: 'width 250ms cubic-bezier(0.4, 0, 0.2, 1)',
+          ...gradientStyle,
+        }}
       >
         <SidebarContent
           collapsed={!desktopExpanded}
@@ -209,35 +196,29 @@ export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
           expanded={desktopExpanded}
           onToggle={() => setDesktopExpanded((v) => !v)}
         />
-      </motion.aside>
+      </aside>
+
+      {/* Mobile backdrop */}
+      <div
+        className={cn(
+          'fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden',
+          'transition-opacity duration-200',
+          mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        )}
+        onClick={onMobileClose}
+      />
 
       {/* Mobile drawer */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <>
-            <motion.div
-              key="backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              onClick={onMobileClose}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
-            />
-            <motion.aside
-              key="drawer"
-              initial={{ x: '-100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
-              transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-              className="fixed left-0 top-0 h-full w-72 bg-card border-r border-border z-50 md:hidden shadow-2xl"
-              style={gradientStyle}
-            >
-              <SidebarContent collapsed={false} onNav={onMobileClose} onClose={onMobileClose} />
-            </motion.aside>
-          </>
+      <aside
+        className={cn(
+          'fixed left-0 top-0 h-full w-72 bg-card border-r border-border z-50 md:hidden shadow-2xl',
+          'transition-transform duration-250 ease-[cubic-bezier(0.4,0,0.2,1)]',
+          mobileOpen ? 'translate-x-0' : '-translate-x-full'
         )}
-      </AnimatePresence>
+        style={gradientStyle}
+      >
+        <SidebarContent collapsed={false} onNav={onMobileClose} onClose={onMobileClose} />
+      </aside>
     </>
   )
 }
