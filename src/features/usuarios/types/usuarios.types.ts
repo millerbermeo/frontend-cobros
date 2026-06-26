@@ -1,8 +1,10 @@
+import type { Rol } from '../schemas/usuario.schema'
+
 export interface Usuario {
   id: number
   name: string
   username: string
-  rol: string
+  rol: Rol
   state: number // 1 = activo, 0 = inactivo
 }
 

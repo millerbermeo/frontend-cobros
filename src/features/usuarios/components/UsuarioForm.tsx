@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@heroui/react'
 import { FormInput } from '@/shared/components/forms/FormInput'
 import {
+  ROLES,
   createUsuarioSchema,
   editUsuarioSchema,
   type CreateUsuarioValues,
@@ -16,27 +17,26 @@ const SELECT_CLASS =
 
 interface UsuarioFormProps {
   usuario?: Usuario | null
-  roles: string[]
   onSuccess: (data: CreateUsuarioValues | EditUsuarioValues) => void
   onCancel: () => void
   isPending?: boolean
 }
 
-export function UsuarioForm({ usuario, roles, onSuccess, onCancel, isPending }: UsuarioFormProps) {
+export function UsuarioForm({ usuario, onSuccess, onCancel, isPending }: UsuarioFormProps) {
   const isEdit = !!usuario
 
   const createForm = useForm<CreateUsuarioValues>({
     resolver: zodResolver(createUsuarioSchema),
     mode: 'onTouched',
     reValidateMode: 'onChange',
-    defaultValues: { name: '', username: '', pass: '', rol: 'Cobrador', state: 1 },
+    defaultValues: { name: '', username: '', pass: '', rol: 'Administrador', state: 1 },
   })
 
   const editForm = useForm<EditUsuarioValues>({
     resolver: zodResolver(editUsuarioSchema),
     mode: 'onTouched',
     reValidateMode: 'onChange',
-    defaultValues: { name: '', username: '', pass: '', rol: 'Cobrador', state: 1 },
+    defaultValues: { name: '', username: '', pass: '', rol: 'Administrador', state: 1 },
   })
 
   useEffect(() => {
@@ -77,7 +77,7 @@ export function UsuarioForm({ usuario, roles, onSuccess, onCancel, isPending }: 
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium text-foreground">Rol <span className="text-danger">*</span></label>
             <select {...editForm.register('rol')} className={SELECT_CLASS}>
-              {roles.map((r) => <option key={r} value={r}>{r}</option>)}
+              {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
             </select>
             {editForm.formState.errors.rol && (
               <p className="text-xs text-danger">{editForm.formState.errors.rol.message}</p>
@@ -127,7 +127,7 @@ export function UsuarioForm({ usuario, roles, onSuccess, onCancel, isPending }: 
       <div className="flex flex-col gap-1">
         <label className="text-sm font-medium text-foreground">Rol <span className="text-danger">*</span></label>
         <select {...createForm.register('rol')} className={SELECT_CLASS}>
-          {roles.map((r) => <option key={r} value={r}>{r}</option>)}
+          {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
         </select>
         {createForm.formState.errors.rol && (
           <p className="text-xs text-danger">{createForm.formState.errors.rol.message}</p>
