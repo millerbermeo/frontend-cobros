@@ -65,6 +65,7 @@ export function Navbar({ onMobileMenuOpen }: NavbarProps) {
         <Button
           variant="ghost"
           isIconOnly
+          aria-label="Abrir menú"
           className="md:hidden text-foreground/60"
           onPress={onMobileMenuOpen}
         >
@@ -87,6 +88,7 @@ export function Navbar({ onMobileMenuOpen }: NavbarProps) {
             <Button
               variant="ghost"
               isIconOnly
+              aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
               onPress={toggleTheme}
               className="text-foreground/60 hover:text-foreground hover:bg-foreground/8 rounded-xl"
             >
@@ -122,6 +124,7 @@ export function Navbar({ onMobileMenuOpen }: NavbarProps) {
             <Button
               variant="ghost"
               isIconOnly
+              aria-label="Cerrar sesión"
               onPress={logout}
               className="text-foreground/50 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-colors"
             >
