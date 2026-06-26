@@ -25,6 +25,11 @@ const ROL_COLORS: Record<string, string> = {
 
 const columns: Column<Record<string, unknown>>[] = [
   {
+    key: 'id',
+    label: '#',
+    render: (val) => <span className="text-xs font-medium text-foreground/50">{String(val)}</span>,
+  },
+  {
     key: 'name',
     label: 'Usuario',
     sortable: true,
@@ -126,7 +131,7 @@ export function UsuariosPage() {
   }
 
   const actionColumn: Column<Record<string, unknown>> = {
-    key: 'id',
+    key: 'acciones',
     label: 'Acciones',
     render: (_, row) => {
       const u = row as unknown as Usuario

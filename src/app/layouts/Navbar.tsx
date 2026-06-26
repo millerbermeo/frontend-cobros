@@ -91,8 +91,8 @@ export function Navbar({ onMobileMenuOpen }: NavbarProps) {
               className="text-foreground/60 hover:text-foreground hover:bg-foreground/8 rounded-xl"
             >
               {isDark
-                ? <MdLightMode className="w-[18px] h-[18px]" />
-                : <MdDarkMode className="w-[18px] h-[18px]" />}
+                ? <MdLightMode className="w-4.5 h-4.5" />
+                : <MdDarkMode className="w-4.5 h-4.5" />}
             </Button>
           </Tooltip.Trigger>
           <Tooltip.Content>{isDark ? 'Modo claro' : 'Modo oscuro'}</Tooltip.Content>
@@ -125,7 +125,7 @@ export function Navbar({ onMobileMenuOpen }: NavbarProps) {
               onPress={logout}
               className="text-foreground/50 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-colors"
             >
-              <MdLogout className="w-[18px] h-[18px]" />
+              <MdLogout className="w-4.5 h-4.5" />
             </Button>
           </Tooltip.Trigger>
           <Tooltip.Content>Cerrar sesión</Tooltip.Content>
