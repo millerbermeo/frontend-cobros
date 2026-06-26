@@ -5,7 +5,7 @@ import {
   type Path,
   type RegisterOptions,
 } from 'react-hook-form'
-import { TextField, Label, TextArea, FieldError } from '@heroui/react'
+import { TextField, Label, TextArea } from '@heroui/react'
 
 interface FormTextareaProps<T extends FieldValues> {
   name: Path<T>
@@ -48,7 +48,9 @@ export function FormTextarea<T extends FieldValues>({
         >
           {label && <Label>{label}</Label>}
           <TextArea placeholder={placeholder} rows={rows} ref={field.ref} />
-          <FieldError>{fieldState.error?.message}</FieldError>
+          {fieldState.error && (
+            <p className="text-sm text-danger mt-1">{fieldState.error.message}</p>
+          )}
         </TextField>
       )}
     />

@@ -1,30 +1,39 @@
-import { useForm } from 'react-hook-form'
+import { useForm, type Resolver } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@heroui/react'
+import { MdInsertDriveFile } from 'react-icons/md'
 import { FormInput } from '@/shared/components/forms/FormInput'
 import { FormFileUpload } from '@/shared/components/forms/FormFileUpload'
-import { clienteSchema, type ClienteFormValues } from '../schemas/cliente.schema'
+import { clienteSchema, clienteEditSchema, type ClienteFormValues } from '../schemas/cliente.schema'
+import { customerFileUrl } from '../services/clientes.service'
+import type { Customer } from '../types/clientes.types'
 
 interface ClienteFormProps {
+  customer?: Customer | null
   onSuccess: (data: ClienteFormValues) => void
   onCancel: () => void
   isSubmitting?: boolean
 }
 
-export function ClienteForm({ onSuccess, onCancel, isSubmitting }: ClienteFormProps) {
+export function ClienteForm({ customer, onSuccess, onCancel, isSubmitting }: ClienteFormProps) {
+  const isEdit = !!customer
+  const currentFileUrl = customerFileUrl(customer?.url_source_of_income)
+
   const { control, handleSubmit } = useForm<ClienteFormValues>({
-    resolver: zodResolver(clienteSchema),
+    resolver: zodResolver(isEdit ? clienteEditSchema : clienteSchema) as Resolver<ClienteFormValues>,
+    mode: 'onTouched',
+    reValidateMode: 'onChange',
     defaultValues: {
-      name: '',
-      document: '',
-      address: '',
-      phone: '',
-      email: '',
-      recommended: '',
-      additional_phone: '',
-      type_work: '',
-      employing_entity: '',
-      source_of_income: '',
+      name: customer?.name ?? '',
+      document: customer?.document ?? '',
+      address: customer?.address ?? '',
+      phone: customer?.phone ?? '',
+      email: customer?.email ?? '',
+      recommended: customer?.recommended ?? '',
+      additional_phone: customer?.additional_phone ?? '',
+      type_work: customer?.type_work ?? '',
+      employing_entity: customer?.employing_entity ?? '',
+      source_of_income: customer?.source_of_income ?? '',
       url_source_of_income: undefined,
     },
   })
@@ -119,14 +128,31 @@ export function ClienteForm({ onSuccess, onCancel, isSubmitting }: ClienteFormPr
       />
 
       {/* Soporte de ingresos (archivo) */}
-      <FormFileUpload<ClienteFormValues>
-        name="url_source_of_income"
-        control={control}
-        label="Soporte de ingresos"
-        accept=".pdf,.jpg,.jpeg,.png"
-        maxSizeMB={5}
-        description="Adjunta el soporte (PDF o imagen)"
-      />
+      <div className="flex flex-col gap-2">
+        {isEdit && currentFileUrl && (
+          <a
+            href={currentFileUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline w-fit"
+          >
+            <MdInsertDriveFile className="w-4 h-4" />
+            Ver soporte actual
+          </a>
+        )}
+        <FormFileUpload<ClienteFormValues>
+          name="url_source_of_income"
+          control={control}
+          label={isEdit ? 'Reemplazar soporte (opcional)' : 'Soporte de ingresos'}
+          accept=".pdf,.jpg,.jpeg,.png"
+          maxSizeMB={5}
+          description={
+            isEdit
+              ? 'Sube un archivo solo si quieres reemplazar el actual'
+              : 'Adjunta el soporte (PDF o imagen)'
+          }
+        />
+      </div>
 
       {/* Botones */}
       <div className="flex justify-end gap-2 pt-2 border-t border-border mt-2">
@@ -134,7 +160,7 @@ export function ClienteForm({ onSuccess, onCancel, isSubmitting }: ClienteFormPr
           Cancelar
         </Button>
         <Button type="submit" variant="primary" isPending={isSubmitting}>
-          Registrar cliente
+          {isEdit ? 'Actualizar cliente' : 'Registrar cliente'}
         </Button>
       </div>
     </form>

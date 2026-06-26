@@ -31,10 +31,18 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'auth-store',
       onRehydrateStorage: () => (state) => {
-        if (state?.token) {
-          setAuthToken(state.token)
-        }
+        setAuthToken(state?.token ?? null)
       },
     }
   )
 )
+
+// Sincroniza sesión entre pestañas: si otra pestaña escribe 'auth-store'
+// (login/logout), esta re-lee storage y actualiza user/token/axios.
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'auth-store') {
+      void useAuthStore.persist.rehydrate()
+    }
+  })
+}

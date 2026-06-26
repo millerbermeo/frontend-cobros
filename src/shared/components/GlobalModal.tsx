@@ -38,7 +38,7 @@ export function GlobalModal() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={close}
-            className="fixed inset-0 bg-black/60 z-[100]"
+            className="fixed inset-0 bg-black/60 z-100"
           />
 
           {/* Dialog wrapper — centers the card */}
@@ -48,7 +48,7 @@ export function GlobalModal() {
             animate={{ opacity: 1, scale: 1,    y: 0 }}
             exit={{ opacity: 0,   scale: 0.96, y: 8 }}
             transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-            className="fixed inset-0 z-[101] flex items-center justify-center p-4 pointer-events-none"
+            className="fixed inset-0 z-101 flex items-center justify-center p-4 pointer-events-none"
           >
             <div
               onClick={(e) => e.stopPropagation()}
