@@ -17,9 +17,6 @@ const STATE_CONFIG: Record<number, { label: string; className: string; dot: stri
 
 const ROL_COLORS: Record<string, string> = {
   Administrador: 'text-violet-600 bg-violet-50 dark:bg-violet-500/15',
-  Supervisor:    'text-blue-600   bg-blue-50   dark:bg-blue-500/15',
-  Cobrador:      'text-amber-600  bg-amber-50  dark:bg-amber-500/15',
-  Auditor:       'text-indigo-600 bg-indigo-50 dark:bg-indigo-500/15',
   Asesor:        'text-teal-600   bg-teal-50   dark:bg-teal-500/15',
 }
 
@@ -76,13 +73,13 @@ const columns: Column<Record<string, unknown>>[] = [
 export function UsuariosPage() {
   const { open, close } = useModal()
   const [page, setPage] = useState(1)
+  const [perPage, setPerPage] = useState(10)
 
-  const { data: response, isLoading } = useUsuarios(page)
+  const { data: response, isLoading, isFetching } = useUsuarios(page, perPage)
   const { mutate: createUsuario, isPending: isCreating } = useCreateUsuario()
   const { mutate: updateUsuario, isPending: isUpdating } = useUpdateUsuario()
 
   const usuarios   = response?.data       ?? []
-  const roles      = response?.roles      ?? []
   const pagination = response?.pagination
 
   const handleCreate = (data: CreateUsuarioValues | EditUsuarioValues) => {
@@ -105,7 +102,7 @@ export function UsuariosPage() {
       size: 'sm',
       content: (
         <UsuarioForm
-          roles={roles}
+          
           onSuccess={handleCreate}
           onCancel={close}
           isPending={isCreating}
@@ -121,7 +118,7 @@ export function UsuariosPage() {
       content: (
         <UsuarioForm
           usuario={usuario}
-          roles={roles}
+          
           onSuccess={handleEdit(usuario)}
           onCancel={close}
           isPending={isUpdating}
@@ -176,12 +173,13 @@ export function UsuariosPage() {
           columns={[...columns, actionColumn]}
           data={usuarios as unknown as Record<string, unknown>[]}
           rowKey="id"
-          isLoading={isLoading}
+          isLoading={isLoading || isFetching}
           currentPage={pagination?.current_page ?? page}
           totalPages={pagination?.last_page ?? 1}
           totalItems={pagination?.total}
-          pageSize={pagination?.per_page ?? 10}
+          pageSize={perPage}
           onPageChange={setPage}
+          onPageSizeChange={(s) => { setPerPage(s); setPage(1) }}
           emptyMessage="No se encontraron usuarios"
         />
       </div>

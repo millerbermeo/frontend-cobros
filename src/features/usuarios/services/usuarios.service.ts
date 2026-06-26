@@ -10,8 +10,8 @@ function assertSuccess(response: ApiResponse<unknown>) {
 }
 
 export const usuariosService = {
-  getAll: (page = 1) =>
-    api.get<ListUsersResponse>('/list/users', { params: { page } }),
+  getAll: (page = 1, perPage = 10) =>
+    api.get<ListUsersResponse>('/list/users', { params: { page, per_page: perPage } }),
 
   create: async (data: CreateUsuarioValues) => {
     const res = await api.post<ApiResponse<Usuario>>('/create/c_users', data)
