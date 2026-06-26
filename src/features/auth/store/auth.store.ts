@@ -1,7 +1,21 @@
+import Cookies from 'js-cookie'
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { createJSONStorage, persist } from 'zustand/middleware'
 import { setAuthToken } from '@/lib/axios'
+import { decrypt, encrypt } from '@/lib/crypto'
 import type { User } from '../types/auth.types'
+
+const cookieStorage = createJSONStorage(() => ({
+  getItem: (name: string) => {
+    const raw = Cookies.get(name)
+    if (!raw) return null
+    return decrypt(raw)
+  },
+  setItem: (name: string, value: string) => {
+    Cookies.set(name, encrypt(value), { expires: 7, secure: true, sameSite: 'strict' })
+  },
+  removeItem: (name: string) => Cookies.remove(name),
+}))
 
 interface AuthState {
   user: User | null
@@ -30,6 +44,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-store',
+      storage: cookieStorage,
       onRehydrateStorage: () => (state) => {
         setAuthToken(state?.token ?? null)
       },
