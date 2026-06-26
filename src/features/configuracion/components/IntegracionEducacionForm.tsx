@@ -20,7 +20,9 @@ export function IntegracionEducacionForm() {
 
   const onSubmit = async (_data: IntegracionEducacionValues) => {
     setIsSaving(true)
+    alert.loading('Guardando integración...')
     await new Promise((r) => setTimeout(r, 800))
+    alert.closeLoading()
     setIsSaving(false)
     alert.toast('Integración guardada correctamente')
   }

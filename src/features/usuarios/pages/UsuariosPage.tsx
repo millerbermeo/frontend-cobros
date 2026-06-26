@@ -83,16 +83,18 @@ export function UsuariosPage() {
   const pagination = response?.pagination
 
   const handleCreate = (data: CreateUsuarioValues | EditUsuarioValues) => {
+    alert.loading('Creando usuario...')
     createUsuario(data as CreateUsuarioValues, {
-      onSuccess: () => { close(); alert.toast('Usuario creado correctamente') },
-      onError:   () => alert.toast('Error al crear el usuario', 'error'),
+      onSuccess: () => { alert.closeLoading(); close(); alert.toast('Usuario creado correctamente') },
+      onError:   () => { alert.closeLoading(); alert.toast('Error al crear el usuario', 'error') },
     })
   }
 
   const handleEdit = (usuario: Usuario) => (data: CreateUsuarioValues | EditUsuarioValues) => {
+    alert.loading('Actualizando usuario...')
     updateUsuario({ id: usuario.id, data: data as EditUsuarioValues }, {
-      onSuccess: () => { close(); alert.toast('Usuario actualizado correctamente') },
-      onError:   () => alert.toast('Error al actualizar el usuario', 'error'),
+      onSuccess: () => { alert.closeLoading(); close(); alert.toast('Usuario actualizado correctamente') },
+      onError:   () => { alert.closeLoading(); alert.toast('Error al actualizar el usuario', 'error') },
     })
   }
 

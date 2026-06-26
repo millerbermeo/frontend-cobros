@@ -37,6 +37,21 @@ const toastMixin = Swal.mixin({
 })
 
 export const alert = {
+  loading: (title = 'Procesando...') => {
+    const isDark = document.documentElement.classList.contains('dark')
+    Swal.fire({
+      title,
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      showConfirmButton: false,
+      background: isDark ? '#1e293b' : '#ffffff',
+      color:      isDark ? '#f1f5f9' : '#111827',
+      didOpen: () => Swal.showLoading(),
+    })
+  },
+
+  closeLoading: () => Swal.close(),
+
   success: (title: string, text?: string) =>
     buildSwal().fire({ icon: 'success', title, text, confirmButtonText: 'Aceptar' }),
 
