@@ -222,3 +222,110 @@ Use `cn()` from `@/shared/utils/cn` for conditional class merging.
 ### Static / mock data
 
 Several modules (dashboard, clientes, usuarios) use in-memory mock data while backend endpoints aren't ready. Service files exist and are ready to wire up. Mock data lives in `features/<name>/data/<name>.mock.ts`.
+
+### Alert / loading utility — métodos adicionales
+
+```tsx
+alert.loading('Creando usuario...')   // spinner SweetAlert2, bloquea clicks
+alert.closeLoading()                  // cierra el spinner antes del toast
+```
+
+Patrón obligatorio en todas las mutations:
+```tsx
+alert.loading('Guardando...')
+try {
+  await mutation.mutateAsync(data)
+  alert.closeLoading()
+  alert.toast('Guardado correctamente')
+} catch {
+  alert.closeLoading()
+  alert.toast('Error al guardar', 'error')
+}
+```
+
+---
+
+## Engineering Principles
+
+Estas reglas son **obligatorias** en todas las tareas. Claude Code debe actuar como arquitecto de software, no como generador de código. Aplicar siempre, sin esperar instrucción del usuario.
+
+### Arquitectura
+
+- Antes de escribir cualquier código, analizar la mejor arquitectura para la funcionalidad en el contexto de este proyecto (Feature-based + TanStack Query + Zustand + HeroUI v3).
+- Priorizar mantenibilidad, escalabilidad y legibilidad por encima de velocidad de implementación.
+- Aplicar SOLID, especialmente **Single Responsibility Principle**: cada módulo, componente, hook y servicio tiene una única razón para cambiar.
+- Favorecer composición de componentes pequeños sobre componentes monolíticos.
+- Mantener bajo acoplamiento entre features. Una feature no debe importar directamente de otra — usar `shared/` para código transversal.
+- Respetar siempre la estructura `features/<name>/{types,schemas,services,hooks,components,pages}`.
+
+### Componentes
+
+- Nunca crear componentes demasiado grandes. Si un componente supera ~150 líneas, dividirlo inmediatamente.
+- Extraer subcomponentes reutilizables desde el inicio, no después.
+- Un componente debe tener una única responsabilidad: o renderiza UI o coordina lógica, nunca ambas cosas en profundidad.
+- Los archivos `*Page.tsx` solo orquestan: montan layout, delegan a hooks y abren modales. No contienen JSX complejo ni lógica de negocio directa.
+- Formularios siempre en su propio componente (`*Form.tsx`) dentro de `features/<name>/components/`. Nunca inline en una Page.
+- Columnas de tabla complejas extraer a subcomponentes o funciones render fuera del componente principal.
+
+### Funciones
+
+- Funciones máximo ~40 líneas. Si crece, extraer funciones auxiliares con nombre descriptivo.
+- Evitar más de 2 niveles de anidación (if dentro de if dentro de map). Extraer o invertir condiciones.
+- Handlers de eventos en Pages (`handleCreate`, `handleEdit`) solo llaman a mutation + alert. Sin lógica de transformación — esa va en el servicio o en el hook.
+
+### Hooks personalizados
+
+- Toda lógica que mezcle estado + efectos + queries debe vivir en un hook propio en `features/<name>/hooks/`.
+- Nunca mezclar `useQuery`/`useMutation` directamente dentro de componentes visuales. Siempre envolverlos en hooks de la feature (ej: `useUsuarios`, `useCreateUsuario`).
+- Si el mismo patrón de query/mutation aparece en más de un lugar, extraer a `shared/hooks/`.
+- Hooks de TanStack Query siempre con `queryKey` tipado, `placeholderData: keepPreviousData` en listas paginadas, e `invalidateQueries` en `onSuccess` de mutations.
+
+### Servicios
+
+- Toda llamada a la API vive en `features/<name>/services/<name>.service.ts` usando `import api from '@/lib/axios'`.
+- Los servicios exportan un objeto (`export const xService = { getAll, create, update, delete }`) — nunca funciones sueltas.
+- Los servicios no manejan errores de UI (no llaman a `alert`). Solo lanzan el error para que el hook/page lo capture.
+- Transformaciones de datos (mapeos, normalizaciones) van en el servicio, no en el componente.
+
+### Schemas y tipos
+
+- Siempre definir schemas Zod en `features/<name>/schemas/` antes de crear el formulario.
+- Exportar los tipos inferidos (`type XValues = z.infer<typeof xSchema>`) desde el mismo archivo del schema.
+- Las interfaces de dominio van en `features/<name>/types/`. Los schemas Zod son para validación de formularios, no para tipar el API response.
+- Usar `ROLES`, `STATUS`, etc. como `as const` arrays cuando hay valores enum fijos — nunca strings mágicos dispersos.
+
+### Organización y reutilización
+
+- Antes de crear un componente nuevo, verificar si existe algo reutilizable en `shared/components/`.
+- Formularios usan siempre `FormInput`, `FormSelect`, etc. de `@/shared/components/forms/`. Nunca `<input>` crudo salvo casos justificados.
+- `DataTable` de `@/shared/components/tables/` para todas las tablas. No crear tablas custom.
+- `useModal()` + `GlobalModal` para todos los modales. No usar HeroUI Modal directamente.
+- `alert.*` de `@/shared/utils/alert` para todos los toasts/confirmaciones. No usar `window.alert`, `console.log` ni Swal directo.
+- `cn()` de `@/shared/utils/cn` para todas las clases condicionales.
+
+### Límites de tamaño — se aplican automáticamente
+
+| Unidad | Límite recomendado | Acción si se supera |
+|---|---|---|
+| Función / handler | ~40 líneas | Extraer función auxiliar |
+| Componente | ~150 líneas | Dividir en subcomponentes |
+| Archivo | ~300 líneas | Reorganizar en múltiples archivos |
+| Hook | ~80 líneas | Separar responsabilidades |
+| Servicio | ~60 líneas | Dividir por entidad/operación |
+
+Si al escribir código se supera algún límite, **refactorizar antes de continuar**. No esperar al final de la tarea.
+
+### Auto-revisión obligatoria antes de terminar cualquier tarea
+
+Antes de declarar una tarea completa, verificar:
+
+1. **¿Hay código duplicado?** → Extraer a `shared/` o a un helper de la feature.
+2. **¿El componente puede dividirse?** → Crear subcomponentes con nombre descriptivo.
+3. **¿Puede extraerse un hook?** → Mover lógica de estado/query a `features/<name>/hooks/`.
+4. **¿Puede extraerse un servicio?** → Mover llamadas API fuera del componente.
+5. **¿Hay demasiada lógica en la Page?** → Pages solo orquestan; la lógica va en hooks y servicios.
+6. **¿Algún archivo superó el límite de tamaño?** → Reorganizar.
+7. **¿La solución respeta la arquitectura feature-based del proyecto?** → Verificar ubicación de cada archivo creado.
+8. **¿Pasó el type-check?** → Ejecutar `pnpm exec tsc -b` siempre antes de terminar.
+
+Si alguna respuesta es **sí**, refactorizar antes de considerar la tarea terminada. Claude nunca debe esperar a que el usuario solicite una refactorización — es responsabilidad automática.

@@ -138,12 +138,15 @@ export function ClientesPage() {
   }
 
   const handleCreate = async (formData: ClienteFormValues) => {
+    alert.loading('Creando cliente...')
     try {
       const res = await createCliente.mutateAsync(formData)
+      alert.closeLoading()
       close()
       alert.toast(res.data.message || 'Cliente creado')
       setPage(1)
     } catch (err) {
+      alert.closeLoading()
       const data = isAxiosError(err) ? (err.response?.data as { error?: string; message?: string }) : undefined
       alert.error('Error', data?.error || data?.message || 'No se pudo crear el cliente')
     }
@@ -158,11 +161,14 @@ export function ClientesPage() {
   }
 
   const handleEdit = (customer: Customer) => async (formData: ClienteFormValues) => {
+    alert.loading('Actualizando cliente...')
     try {
       const res = await updateCliente.mutateAsync({ id: customer.id, data: formData })
+      alert.closeLoading()
       close()
       alert.toast(res.data.message || 'Cliente actualizado')
     } catch (err) {
+      alert.closeLoading()
       const data = isAxiosError(err) ? (err.response?.data as { error?: string; message?: string }) : undefined
       alert.error('Error', data?.error || data?.message || 'No se pudo actualizar el cliente')
     }

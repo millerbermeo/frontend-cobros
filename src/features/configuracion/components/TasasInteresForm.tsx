@@ -36,7 +36,9 @@ export function TasasInteresForm() {
 
   const onSubmit = async (_data: TasasInteresValues) => {
     setIsSaving(true)
+    alert.loading('Guardando tasas...')
     await new Promise((r) => setTimeout(r, 800))
+    alert.closeLoading()
     setIsSaving(false)
     alert.toast('Tasas de interés guardadas')
   }
