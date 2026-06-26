@@ -14,8 +14,11 @@ export function ConfiguracionPage() {
       </div>
 
       <TasasInteresForm />
-      <IntegracionEducacionForm />
+
       <UsuariosPage />
+
+      <IntegracionEducacionForm />
+
     </ConfiguracionLayout>
   )
 }

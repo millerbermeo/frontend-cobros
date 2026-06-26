@@ -10,6 +10,7 @@ import { SolicitudesPage } from '@/features/solicitudes/pages/SolicitudesPage'
 import { AprobacionesPage } from '@/features/aprobaciones/pages/AprobacionesPage'
 import { ContratosPage } from '@/features/contratos/pages/ContratosPage'
 import { CobranzaPage } from '@/features/cobranza/pages/CobranzaPage'
+import { ClientesMoraPage } from '@/features/clientes-mora/pages/ClientesMoraPage'
 import { AbonosPage } from '@/features/abonos/pages/AbonosPage'
 import { RetirosPage } from '@/features/retiros/pages/RetirosPage'
 import { ReportesPage } from '@/features/reportes/pages/ReportesPage'
@@ -40,6 +41,7 @@ export const router = createBrowserRouter([
               { path: 'aprobaciones', element: <AprobacionesPage /> },
               { path: 'contratos', element: <ContratosPage /> },
               { path: 'cobranza', element: <CobranzaPage /> },
+              { path: 'clientes-mora', element: <ClientesMoraPage /> },
               { path: 'abonos', element: <AbonosPage /> },
               { path: 'retiros', element: <RetirosPage /> },
               { path: 'reportes', element: <ReportesPage /> },

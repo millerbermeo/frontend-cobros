@@ -71,13 +71,13 @@ export function StatsCard({ label, value, subtitle, icon: Icon, variant, trend }
     <div
       className={cn(
         'relative overflow-hidden rounded-2xl border border-border',
-        'bg-gradient-to-br shadow-sm',
+        'bg-linear-to-br shadow-sm',
         'hover:shadow-md hover:-translate-y-0.5 transition-all duration-200',
         v.bg,
       )}
     >
       {/* Colored top bar */}
-      <div className={cn('h-1 w-full bg-gradient-to-r', v.bar)} />
+      <div className={cn('h-1 w-full bg-linear-to-r', v.bar)} />
 
       {/* Watermark icon */}
       <Icon className={cn('absolute -right-3 -bottom-3 w-24 h-24 pointer-events-none select-none', v.watermark)} />

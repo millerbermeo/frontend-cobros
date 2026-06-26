@@ -58,13 +58,13 @@ export function LoginPage() {
         transition={{ duration: 0.45, ease: EASE }}
       >
         {/* Gradient top bar */}
-        <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500" />
+        <div className="h-1.5 w-full bg-linear-to-r from-indigo-500 via-violet-500 to-purple-500" />
 
         <div className="p-10">
           {/* Icon badge + heading */}
           <motion.div className="mb-8" variants={fadeUp} initial="hidden" animate="show" custom={0}>
             <div
-              className="w-13 h-13 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center mb-5 shadow-lg shadow-indigo-500/30"
+              className="w-13 h-13 rounded-2xl bg-linear-to-br from-indigo-500 to-violet-600 flex items-center justify-center mb-5 shadow-lg shadow-indigo-500/30"
               style={{ width: '3.25rem', height: '3.25rem' }}
             >
               <MdLockOutline className="w-6 h-6 text-white" />
