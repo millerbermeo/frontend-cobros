@@ -51,6 +51,14 @@ export const clientesService = {
     api.post<CreateClienteResponse>('/create/c_customer', toFormData(values), {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
-  update: (id: string, data: Partial<Cliente>) => api.put<Cliente>(`/clientes/${id}`, data),
+  // Misma URL/método (POST) con id + _method=PUT. Si no hay archivo nuevo, se conserva el anterior.
+  update: (id: number | string, values: ClienteFormValues) => {
+    const fd = toFormData(values)
+    fd.append('id', String(id))
+    fd.append('_method', 'PUT')
+    return api.post<CreateClienteResponse>('/create/c_customer', fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+  },
   delete: (id: string) => api.delete(`/clientes/${id}`),
 }

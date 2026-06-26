@@ -38,7 +38,7 @@ export function useCreateCliente() {
 export function useUpdateCliente() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Parameters<typeof clientesService.update>[1] }) =>
+    mutationFn: ({ id, data }: { id: number | string; data: Parameters<typeof clientesService.update>[1] }) =>
       clientesService.update(id, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEY] }),
   })

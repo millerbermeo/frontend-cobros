@@ -27,11 +27,15 @@ export function UsuarioForm({ usuario, roles, onSuccess, onCancel, isPending }: 
 
   const createForm = useForm<CreateUsuarioValues>({
     resolver: zodResolver(createUsuarioSchema),
+    mode: 'onTouched',
+    reValidateMode: 'onChange',
     defaultValues: { name: '', username: '', pass: '', rol: 'Cobrador', state: 1 },
   })
 
   const editForm = useForm<EditUsuarioValues>({
     resolver: zodResolver(editUsuarioSchema),
+    mode: 'onTouched',
+    reValidateMode: 'onChange',
     defaultValues: { name: '', username: '', pass: '', rol: 'Cobrador', state: 1 },
   })
 

@@ -1,19 +1,24 @@
 import { useState, useMemo } from 'react'
 import { isAxiosError } from 'axios'
 import { Button } from '@heroui/react'
-import { MdPersonAdd, MdPeople, MdSearch, MdInsertDriveFile } from 'react-icons/md'
+import { MdPersonAdd, MdPeople, MdSearch, MdInsertDriveFile, MdEdit } from 'react-icons/md'
 import { useModal } from '@/app/store/modal.store'
 import { alert } from '@/shared/utils/alert'
 import { useDebounce } from '@/shared/hooks/useDebounce'
 import { DataTable, type Column } from '@/shared/components/tables/DataTable'
 import { ClientesLayout } from '../layouts/ClientesLayout'
 import { ClienteForm } from '../components/ClienteForm'
-import { useCustomers, useCreateCliente } from '../hooks/useClientes'
+import { useCustomers, useCreateCliente, useUpdateCliente } from '../hooks/useClientes'
 import { customerFileUrl } from '../services/clientes.service'
 import type { Customer } from '../types/clientes.types'
 import type { ClienteFormValues } from '../schemas/cliente.schema'
 
 const columns: Column<Record<string, unknown>>[] = [
+  {
+    key: 'id',
+    label: '#',
+    render: (val) => <span className="text-xs font-medium text-foreground/50">{String(val)}</span>,
+  },
   {
     key: 'name',
     label: 'Cliente',
@@ -96,6 +101,7 @@ const FILTER_INPUT_CLASS =
 export function ClientesPage() {
   const { open, close } = useModal()
   const createCliente = useCreateCliente()
+  const updateCliente = useUpdateCliente()
 
   const [page, setPage] = useState(1)
   const [perPage, setPerPage] = useState(10)
@@ -151,6 +157,44 @@ export function ClientesPage() {
     })
   }
 
+  const handleEdit = (customer: Customer) => async (formData: ClienteFormValues) => {
+    try {
+      const res = await updateCliente.mutateAsync({ id: customer.id, data: formData })
+      close()
+      alert.toast(res.data.message || 'Cliente actualizado')
+    } catch (err) {
+      const data = isAxiosError(err) ? (err.response?.data as { error?: string; message?: string }) : undefined
+      alert.error('Error', data?.error || data?.message || 'No se pudo actualizar el cliente')
+    }
+  }
+
+  const openEdit = (customer: Customer) => {
+    open({
+      title: 'Editar cliente',
+      size: 'md',
+      content: <ClienteForm customer={customer} onSuccess={handleEdit(customer)} onCancel={close} />,
+    })
+  }
+
+  const actionColumn: Column<Record<string, unknown>> = {
+    key: 'acciones',
+    label: 'Acciones',
+    render: (_, row) => {
+      const c = row as unknown as Customer
+      return (
+        <Button
+          variant="ghost"
+          isIconOnly
+          size="sm"
+          className="text-foreground/50 hover:text-primary hover:bg-primary/10"
+          onPress={() => openEdit(c)}
+        >
+          <MdEdit className="w-4 h-4" />
+        </Button>
+      )
+    },
+  }
+
   const filters = (
     <>
       <div className="relative">
@@ -196,7 +240,7 @@ export function ClientesPage() {
 
       <div className="bg-card rounded-2xl border border-border shadow-sm p-5">
         <DataTable
-          columns={columns}
+          columns={[...columns, actionColumn]}
           data={customers as unknown as Record<string, unknown>[]}
           rowKey="id"
           isLoading={isLoading || isFetching}
