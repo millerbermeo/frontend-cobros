@@ -1,7 +1,16 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { clientesService } from '../services/clientes.service'
+import type { CustomersParams } from '../types/clientes.types'
 
 const QUERY_KEY = 'clientes'
+
+export function useCustomers(params: CustomersParams) {
+  return useQuery({
+    queryKey: [QUERY_KEY, params],
+    queryFn: () => clientesService.list(params).then((r) => r.data),
+    placeholderData: keepPreviousData,
+  })
+}
 
 export function useClientes() {
   return useQuery({

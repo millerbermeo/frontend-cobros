@@ -1,6 +1,25 @@
 import api from '@/lib/axios'
-import type { Cliente, CreateClienteResponse } from '../types/clientes.types'
+import { config } from '@/config'
+import type {
+  Cliente,
+  CreateClienteResponse,
+  CustomersParams,
+  CustomersResponse,
+} from '../types/clientes.types'
 import type { ClienteFormValues } from '../schemas/cliente.schema'
+
+/**
+ * El backend guarda url_source_of_income como ruta absoluta del servidor
+ * (/var/www/html/back/create/document_customer/<archivo>) o como URL externa.
+ * Devuelve un enlace abierto en el navegador, o null si no aplica.
+ */
+export function customerFileUrl(raw: string | null | undefined): string | null {
+  if (!raw) return null
+  if (/^https?:\/\//i.test(raw)) return raw
+  const name = raw.split('/').pop()
+  if (!name) return null
+  return `${config.apiUrl}/create/document_customer/${name}`
+}
 
 function toFormData(values: ClienteFormValues): FormData {
   const fd = new FormData()
@@ -24,6 +43,8 @@ function toFormData(values: ClienteFormValues): FormData {
 }
 
 export const clientesService = {
+  list: (params: CustomersParams = {}) =>
+    api.get<CustomersResponse>('/list/customers.php', { params }),
   getAll: () => api.get<Cliente[]>('/clientes'),
   getById: (id: string) => api.get<Cliente>(`/clientes/${id}`),
   create: (values: ClienteFormValues) =>
