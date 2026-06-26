@@ -33,3 +33,13 @@ export const useAppStore = create<AppState>()(
     }
   )
 )
+
+// Sync theme across browser tabs: when another tab writes 'app-store',
+// re-read storage and re-apply the dark class in this tab.
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'app-store') {
+      void useAppStore.persist.rehydrate()
+    }
+  })
+}
