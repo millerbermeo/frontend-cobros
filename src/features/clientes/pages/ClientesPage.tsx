@@ -1,11 +1,13 @@
 import { useState, useMemo } from 'react'
 import { Button } from '@heroui/react'
-import { MdPersonAdd, MdPeople, MdEdit, MdDelete } from 'react-icons/md'
+import { MdPersonAdd, MdPeople, MdDelete } from 'react-icons/md'
 import { useModal } from '@/app/store/modal.store'
+import { alert } from '@/shared/utils/alert'
 import { DataTable, type Column } from '@/shared/components/tables/DataTable'
 import { usePagination } from '@/shared/hooks/usePagination'
 import { ClientesLayout } from '../layouts/ClientesLayout'
 import { ClienteForm } from '../components/ClienteForm'
+import { useCreateCliente } from '../hooks/useClientes'
 import { MOCK_CLIENTES } from '../data/clientes.mock'
 import type { Cliente, TipoIdentificacion } from '../types/clientes.types'
 import type { ClienteFormValues } from '../schemas/cliente.schema'
@@ -88,6 +90,7 @@ const columns: Column<Record<string, unknown>>[] = [
 
 export function ClientesPage() {
   const { open, close } = useModal()
+  const createCliente = useCreateCliente()
   const [clientes, setClientes] = useState<Cliente[]>(MOCK_CLIENTES)
   const { params, setPage, setPageSize, setSearch } = usePagination()
   const [sortKey, setSortKey] = useState<string>('')
@@ -120,18 +123,31 @@ export function ClientesPage() {
   const safePage = Math.min(params.page, totalPages)
   const paginated = filtered.slice((safePage - 1) * params.pageSize, safePage * params.pageSize)
 
-  const handleCreate = (data: ClienteFormValues) => {
-    const newId = String(Math.max(...clientes.map((c) => Number(c.id))) + 1)
-    setClientes((prev) => [
-      ...prev,
-      { ...data, id: newId, createdAt: new Date().toISOString().slice(0, 10) },
-    ])
-    close()
-  }
-
-  const handleEdit = (cliente: Cliente) => (data: ClienteFormValues) => {
-    setClientes((prev) => prev.map((c) => c.id === cliente.id ? { ...c, ...data } : c))
-    close()
+  const handleCreate = async (data: ClienteFormValues) => {
+    try {
+      const res = await createCliente.mutateAsync(data)
+      const nuevo: Cliente = {
+        id: String(res.data.id),
+        nombre: data.name,
+        apellidos: '',
+        tipoIdentificacion: 'cedula',
+        numeroIdentificacion: data.document,
+        direccion: data.address,
+        telefono: data.phone,
+        correo: data.email || undefined,
+        recomendadoPor: data.recommended || undefined,
+        telefonoAdicional: data.additional_phone || undefined,
+        tipoTrabajo: data.type_work,
+        entidadTrabajo: data.employing_entity,
+        fuenteIngresos: data.source_of_income || undefined,
+        createdAt: new Date().toISOString().slice(0, 10),
+      }
+      setClientes((prev) => [nuevo, ...prev])
+      close()
+      alert.toast(res.data.message || 'Cliente creado')
+    } catch {
+      alert.error('Error', 'No se pudo crear el cliente')
+    }
   }
 
   const openCreate = () => {
@@ -139,14 +155,6 @@ export function ClientesPage() {
       title: 'Registrar cliente',
       size: 'md',
       content: <ClienteForm onSuccess={handleCreate} onCancel={close} />,
-    })
-  }
-
-  const openEdit = (cliente: Cliente) => {
-    open({
-      title: 'Editar cliente',
-      size: 'md',
-      content: <ClienteForm cliente={cliente} onSuccess={handleEdit(cliente)} onCancel={close} />,
     })
   }
 
@@ -178,12 +186,6 @@ export function ClientesPage() {
       const c = row as unknown as Cliente
       return (
         <div className="flex items-center gap-1">
-          <Button variant="ghost" isIconOnly size="sm"
-            className="text-foreground/50 hover:text-primary hover:bg-primary/10"
-            onPress={() => openEdit(c)}
-          >
-            <MdEdit className="w-4 h-4" />
-          </Button>
           <Button variant="ghost" isIconOnly size="sm"
             className="text-foreground/50 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10"
             onPress={() => openDelete(c)}

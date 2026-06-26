@@ -5,6 +5,12 @@ export type TipoIdentificacion =
   | 'nit'
   | 'tarjeta_identidad'
 
+export interface CreateClienteResponse {
+  success: boolean
+  message: string
+  id: number
+}
+
 export interface Cliente {
   id: string
   nombre: string
