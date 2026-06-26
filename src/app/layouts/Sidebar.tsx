@@ -71,7 +71,7 @@ function NavItem({ item, collapsed, onNav }: NavItemProps) {
         )
       }
     >
-      <Icon className="w-[18px] h-[18px] shrink-0" />
+      <Icon className="w-4.5 h-4.5 shrink-0" />
       <AnimatePresence>
         {!collapsed && (
           <motion.span
@@ -130,7 +130,7 @@ function SidebarContent({ collapsed, onNav, showToggle, expanded, onToggle, onCl
         )}
       >
         <div className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center shrink-0">
-          <MdAccountBalanceWallet className="w-[18px] h-[18px] text-white" />
+          <MdAccountBalanceWallet className="w-4.5 h-4.5 text-white" />
         </div>
         <AnimatePresence>
           {!collapsed && (
