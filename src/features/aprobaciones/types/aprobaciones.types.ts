@@ -1,11 +1,12 @@
-export type EstadoAprobacion = 'pendiente' | 'aprobada' | 'rechazada'
+export type EstadoAprobacion = 'pendiente' | 'validacion' | 'aprobado' | 'rechazado'
 
 export interface Aprobacion {
   id: string
-  solicitudId: string
-  revisadoPor: string
+  cliente: string
+  monto: number
+  plazo: number
+  tasa: number
+  /** Cantidad de pasos completados (0..STEPS.length). */
+  completados: number
   estado: EstadoAprobacion
-  comentario?: string
-  fechaRevision: string
-  createdAt: string
 }

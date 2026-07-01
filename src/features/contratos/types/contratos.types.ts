@@ -1,15 +1,12 @@
-export type EstadoContrato = 'activo' | 'finalizado' | 'cancelado' | 'moroso'
+export type EstadoContrato = 'firmado' | 'pendiente' | 'generado'
 
 export interface Contrato {
   id: string
-  solicitudId: string
-  clienteId: string
+  numero: number
+  cliente: string
   monto: number
+  tasa: number
   plazo: number
-  tasaInteres: number
-  cuotaMensual: number
+  fechaFirma: string
   estado: EstadoContrato
-  fechaInicio: string
-  fechaFin: string
-  createdAt: string
 }
