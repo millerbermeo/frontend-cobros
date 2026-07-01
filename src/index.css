@@ -70,6 +70,13 @@
 .react-select__control {
   min-height: 3rem !important;
   font-size: 1rem;
+  background-color: var(--color-card) !important;
+  border-color: var(--color-border) !important;
+}
+
+.react-select__control--is-focused {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 1px var(--color-primary) !important;
 }
 
 .react-select__value-container {
@@ -80,4 +87,44 @@
 .react-select__single-value,
 .react-select__input-container {
   font-size: 1rem;
+}
+
+.react-select__single-value,
+.react-select__input-container,
+.react-select__input {
+  color: var(--color-foreground) !important;
+}
+
+.react-select__placeholder {
+  color: var(--color-muted) !important;
+}
+
+.react-select__indicator-separator {
+  background-color: var(--color-border) !important;
+}
+
+.react-select__dropdown-indicator,
+.react-select__clear-indicator {
+  color: var(--color-muted) !important;
+}
+
+.react-select__menu {
+  background-color: var(--color-card) !important;
+  border: 1px solid var(--color-border) !important;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.15) !important;
+}
+
+.react-select__option {
+  background-color: transparent !important;
+  color: var(--color-foreground) !important;
+  cursor: pointer;
+}
+
+.react-select__option--is-focused {
+  background-color: color-mix(in srgb, var(--color-primary) 12%, transparent) !important;
+}
+
+.react-select__option--is-selected {
+  background-color: var(--color-primary) !important;
+  color: #ffffff !important;
 }

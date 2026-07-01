@@ -1,4 +1,4 @@
-export type NivelMora = 'leve' | 'moderada' | 'critica'
+export type NivelMora = 'leve' | 'moderada' | 'grave' | 'critica'
 
 export interface ClienteMora {
   id: string
@@ -13,4 +13,17 @@ export interface ClienteMora {
   ultimoPago?: string
   fechaVencimiento: string
   createdAt: string
+}
+
+export interface ClienteMoraRow {
+  id: string
+  nombre: string
+  cedula: string
+  telefono: string
+  diasMora: number
+  nivel: NivelMora
+  capital: number
+  interesesColgados: number
+  interesesGenerados: number
+  deudaTotal: number
 }

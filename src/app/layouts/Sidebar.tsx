@@ -212,7 +212,7 @@ export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
       <aside
         className={cn(
           'fixed left-0 top-0 h-full w-72 bg-card border-r border-border z-50 md:hidden shadow-2xl',
-          'transition-transform duration-250 ease-[cubic-bezier(0.4,0,0.2,1)]',
+          'transition-transform duration-250 ease-in-out',
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         )}
         style={gradientStyle}

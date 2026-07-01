@@ -12,3 +12,14 @@ export interface Retiro {
   fechaProcesado?: string
   createdAt: string
 }
+
+export interface RetiroRegistro {
+  id: string
+  cliente: string
+  fecha: string
+  hora: string
+  monto: number
+  concepto: string
+  realizadoPor: string
+  autorizadoPor: string
+}

@@ -17,3 +17,18 @@ export interface CobranzaResumen {
   totalCobrado: number
   cuotasVencidas: number
 }
+
+export type EstadoCobranza = 'activo' | 'mora'
+
+export interface CreditoCobranza {
+  id: string
+  numero: number
+  cliente: string
+  saldoCapital: number
+  montoOriginal: number
+  intereses: number
+  fechaCorte: string
+  estado: EstadoCobranza
+  /** Días en mora, solo cuando estado === 'mora'. */
+  moraDias?: number
+}
