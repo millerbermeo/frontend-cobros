@@ -1,7 +1,8 @@
-import { useForm, type Resolver } from 'react-hook-form'
+import { useState } from 'react'
+import { useForm, useWatch, type Resolver } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@heroui/react'
-import { FormInput, FormSelect, FormFileUpload } from '@/shared/components/forms'
+import { FormInput, FormSelect, FormFileUpload, FormMoneyInput } from '@/shared/components/forms'
 import {
   solicitudSchema,
   solicitudEditSchema,
@@ -11,6 +12,9 @@ import {
 } from '../schemas/solicitud.schema'
 import { creditFileUrl } from '../services/solicitudes.service'
 import { CurrentFileLink } from './CurrentFileLink'
+import { ClienteSearchSelect } from './ClienteSearchSelect'
+import { SelectedClienteCard } from './SelectedClienteCard'
+import { RegistrarClienteModal } from './RegistrarClienteModal'
 import type { CreditApplication } from '../types/solicitudes.types'
 
 interface SolicitudFormProps {
@@ -23,7 +27,7 @@ interface SolicitudFormProps {
 export function SolicitudForm({ solicitud, onSuccess, onCancel, isSubmitting }: SolicitudFormProps) {
   const isEdit = !!solicitud
 
-  const { control, handleSubmit } = useForm<SolicitudFormValues>({
+  const { control, handleSubmit, setValue } = useForm<SolicitudFormValues>({
     resolver: zodResolver(isEdit ? solicitudEditSchema : solicitudSchema) as Resolver<SolicitudFormValues>,
     mode: 'onTouched',
     reValidateMode: 'onChange',
@@ -35,6 +39,7 @@ export function SolicitudForm({ solicitud, onSuccess, onCancel, isSubmitting }: 
       rate: solicitud?.rate ?? '3.5',
       term: solicitud ? String(solicitud.term) : '12',
       warranty: solicitud?.warranty ?? '',
+      cutoff_date: solicitud?.cutoff_date ?? '',
       state: solicitud?.state ?? 'Pendiente',
       archive_document: undefined,
       archive_payment_stub: undefined,
@@ -42,17 +47,31 @@ export function SolicitudForm({ solicitud, onSuccess, onCancel, isSubmitting }: 
     },
   })
 
+  const [showRegistrar, setShowRegistrar] = useState(false)
+  const name = useWatch({ control, name: 'name' })
+  const document = useWatch({ control, name: 'document' })
+
+  const fillCliente = (cliente: { name: string; document: string }) => {
+    setValue('name', cliente.name, { shouldValidate: true })
+    setValue('document', cliente.document, { shouldValidate: true })
+  }
+
   return (
     <form onSubmit={handleSubmit(onSuccess)} className="flex flex-col gap-5">
+      {!isEdit && (
+        <>
+          <ClienteSearchSelect onSelect={fillCliente} onAddNew={() => setShowRegistrar(true)} />
+          <RegistrarClienteModal
+            open={showRegistrar}
+            onClose={() => setShowRegistrar(false)}
+            onRegistered={fillCliente}
+          />
+        </>
+      )}
+
+      <SelectedClienteCard name={name} document={document} />
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormInput<SolicitudFormValues>
-          name="name" control={control}
-          label="Nombre del cliente" placeholder="Juan Carlos Pérez" isRequired
-        />
-        <FormInput<SolicitudFormValues>
-          name="document" control={control}
-          label="Documento" placeholder="1032456738" isRequired
-        />
         <FormSelect<SolicitudFormValues>
           name="type_credit" control={control}
           label="Tipo de crédito" placeholder="Seleccionar..."
@@ -64,9 +83,9 @@ export function SolicitudForm({ solicitud, onSuccess, onCancel, isSubmitting }: 
           options={[...ESTADO_OPTIONS]}
           isDisabled={!isEdit}
         />
-        <FormInput<SolicitudFormValues>
+        <FormMoneyInput<SolicitudFormValues>
           name="requested_amount" control={control}
-          label="Monto solicitado" placeholder="$" type="number" isRequired
+          label="Monto solicitado" placeholder="$ 0" isRequired
         />
         <FormInput<SolicitudFormValues>
           name="rate" control={control}
@@ -79,6 +98,10 @@ export function SolicitudForm({ solicitud, onSuccess, onCancel, isSubmitting }: 
         <FormInput<SolicitudFormValues>
           name="warranty" control={control}
           label="Garantía" placeholder="Prenda vehicular, bien raíz..."
+        />
+        <FormInput<SolicitudFormValues>
+          name="cutoff_date" control={control}
+          label="Fecha de corte (opcional)" type="date"
         />
       </div>
 

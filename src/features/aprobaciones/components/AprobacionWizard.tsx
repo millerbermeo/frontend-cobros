@@ -7,7 +7,7 @@ import { ApprovalStepper } from './ApprovalStepper'
 import { StepDocumentos } from './steps/StepDocumentos'
 import { StepTasaPlazo } from './steps/StepTasaPlazo'
 import { StepAprobar } from './steps/StepAprobar'
-import { useUpdateCredit, useUploadDocuments } from '../hooks/useAprobaciones'
+import { useUpdateCredit, useUploadDocuments, useApproveCredit } from '../hooks/useAprobaciones'
 import { TOTAL_STEPS } from '../constants'
 import type { CreditApplication } from '../types/aprobaciones.types'
 import type { TasaPlazoValues, DocsAprobacionValues } from '../schemas/aprobacion.schema'
@@ -32,8 +32,12 @@ function stateToStep(state: string): number {
 export function AprobacionWizard({ solicitud, onDone }: AprobacionWizardProps) {
   const [step, setStep] = useState(() => stateToStep(solicitud.state))
   const [terms, setTerms] = useState({ rate: solicitud.rate, term: solicitud.term })
+  const [docsUploaded, setDocsUploaded] = useState(
+    () => !!(solicitud.archive_1 || solicitud.archive_2 || solicitud.archive_3),
+  )
   const updateCredit = useUpdateCredit()
   const uploadDocuments = useUploadDocuments()
+  const approveCredit = useApproveCredit()
 
   const runUpdate = async (rate: number, term: number, state: string, loading: string, ok: string) => {
     alert.loading(loading)
@@ -74,21 +78,33 @@ export function AprobacionWizard({ solicitud, onDone }: AprobacionWizardProps) {
     setStep(2)
   }
 
-  const handleApprove = async (values: DocsAprobacionValues) => {
+  const handleUpload = async (values: DocsAprobacionValues) => {
     alert.loading('Subiendo documentos...')
     try {
-      await uploadDocuments.mutateAsync({ id: solicitud.id, values })
+      const res = await uploadDocuments.mutateAsync({ id: solicitud.id, values })
+      alert.closeLoading()
+      alert.toast(res.data.message || 'Documentos subidos')
+      setDocsUploaded(true)
     } catch (err) {
       alert.closeLoading()
       alert.error('Error', apiError(err, 'No se pudieron subir los documentos'))
-      return
     }
-    alert.closeLoading()
-    const ok = await runUpdate(Number(terms.rate), Number(terms.term), 'Aprobado', 'Aprobando crédito...', 'Crédito aprobado')
-    if (ok) onDone()
   }
 
-  const busy = updateCredit.isPending || uploadDocuments.isPending
+  const handleApprove = async () => {
+    alert.loading('Aprobando crédito...')
+    try {
+      const res = await approveCredit.mutateAsync(solicitud.id)
+      alert.closeLoading()
+      alert.toast(res.data.message || 'Crédito aprobado')
+      onDone()
+    } catch (err) {
+      alert.closeLoading()
+      alert.error('Error', apiError(err, 'No se pudo aprobar el crédito'))
+    }
+  }
+
+  const busy = updateCredit.isPending || uploadDocuments.isPending || approveCredit.isPending
   const finalizado = solicitud.state === 'Aprobado' || solicitud.state === 'Rechazado'
   // Aprobado/Rechazado: solo lectura, no se puede modificar nada.
   const readOnly = finalizado
@@ -137,9 +153,12 @@ export function AprobacionWizard({ solicitud, onDone }: AprobacionWizardProps) {
       {step === 2 && (
         <StepAprobar
           solicitud={solicitud}
+          onUpload={handleUpload}
           onApprove={handleApprove}
           onBack={() => setStep(1)}
-          isSubmitting={uploadDocuments.isPending || updateCredit.isPending}
+          docsUploaded={docsUploaded}
+          isUploading={uploadDocuments.isPending}
+          isApproving={approveCredit.isPending}
           readOnly={readOnly}
         />
       )}

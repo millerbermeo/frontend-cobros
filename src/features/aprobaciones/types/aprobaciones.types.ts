@@ -16,6 +16,8 @@ export interface CreditApplication {
   archive_1?: string | null
   archive_2?: string | null
   archive_3?: string | null
+  creation_date?: string | null
+  cutoff_date?: string | null
 }
 
 export interface Pagination {
@@ -37,6 +39,7 @@ export interface CreditApplicationsParams {
   per_page?: number
   document?: string
   name?: string
+  state?: string
 }
 
 /** Payload PUT /create/update_credit_application.php (raw JSON) */
@@ -57,4 +60,10 @@ export interface UploadDocumentsResponse {
   message: string
   affected_rows?: number
   data?: Record<string, string>
+}
+
+export interface ApproveCreditResponse {
+  success: boolean
+  message: string
+  signature_date?: string
 }

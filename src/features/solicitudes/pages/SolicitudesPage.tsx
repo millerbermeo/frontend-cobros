@@ -11,10 +11,13 @@ import { SolicitudForm } from '../components/SolicitudForm'
 import { buildColumns } from '../components/solicitudColumns'
 import { useCreditApplications, useCreateSolicitud, useUpdateSolicitud } from '../hooks/useSolicitudes'
 import type { CreditApplication } from '../types/solicitudes.types'
-import type { SolicitudFormValues } from '../schemas/solicitud.schema'
+import { ESTADO_OPTIONS, type SolicitudFormValues } from '../schemas/solicitud.schema'
 
 const FILTER_INPUT_CLASS =
   'w-full sm:w-48 pl-9 pr-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary'
+
+const FILTER_SELECT_CLASS =
+  'w-full sm:w-44 px-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary'
 
 function apiErrorMessage(err: unknown, fallback: string): string {
   const data = isAxiosError(err) ? (err.response?.data as { error?: string; message?: string }) : undefined
@@ -30,6 +33,7 @@ export function SolicitudesPage() {
   const [perPage, setPerPage] = useState(10)
   const [documentInput, setDocumentInput] = useState('')
   const [nameInput, setNameInput] = useState('')
+  const [stateFilter, setStateFilter] = useState('')
 
   const document = useDebounce(documentInput, 400)
   const name = useDebounce(nameInput, 400)
@@ -40,8 +44,9 @@ export function SolicitudesPage() {
       per_page: perPage,
       ...(document ? { document } : {}),
       ...(name ? { name } : {}),
+      ...(stateFilter ? { state: stateFilter } : {}),
     }),
-    [page, perPage, document, name],
+    [page, perPage, document, name, stateFilter],
   )
 
   const { data, isLoading, isFetching } = useCreditApplications(params)
@@ -125,6 +130,16 @@ export function SolicitudesPage() {
           className={FILTER_INPUT_CLASS}
         />
       </div>
+      <select
+        value={stateFilter}
+        onChange={(e) => resetTo(setStateFilter)(e.target.value)}
+        className={FILTER_SELECT_CLASS}
+      >
+        <option value="">Todos los estados</option>
+        {ESTADO_OPTIONS.map((o) => (
+          <option key={o.value} value={o.value}>{o.label}</option>
+        ))}
+      </select>
     </>
   )
 

@@ -2,6 +2,8 @@ import { Button } from '@heroui/react'
 import { MdArrowForward, MdInsertDriveFile } from 'react-icons/md'
 import { cn } from '@/shared/utils/cn'
 import { creditFileUrl } from '@/shared/utils/creditFile'
+import { formatCOP } from '@/shared/utils/currency'
+import { formatFecha } from '@/shared/utils/date'
 import type { CreditApplication } from '../types/aprobaciones.types'
 
 function DocLink({ label, raw }: { label: string; raw: string | null | undefined }) {
@@ -27,8 +29,6 @@ const ESTADO_CONFIG: Record<string, string> = {
   Rechazado:  'text-rose-700    bg-rose-100    dark:text-rose-300    dark:bg-rose-500/15',
 }
 
-const currency = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 })
-
 interface AprobacionCardProps {
   solicitud: CreditApplication
   onProcess: (solicitud: CreditApplication) => void
@@ -49,7 +49,10 @@ export function AprobacionCard({ solicitud, onProcess }: AprobacionCardProps) {
           <h3 className="text-base font-semibold text-foreground">{name}</h3>
           <p className="text-xs text-foreground/40 mt-0.5">Doc: {document} · {type_credit}</p>
           <p className="text-sm text-foreground/50 mt-1">
-            Monto: {currency.format(Number(requested_amount))} · Plazo: {term} meses · Tasa: {rate}%
+            Monto: {formatCOP(Number(requested_amount))} · Plazo: {term} meses · Tasa: {rate}%
+          </p>
+          <p className="text-xs text-foreground/40 mt-1">
+            Creación: {formatFecha(solicitud.creation_date)} · Corte: {formatFecha(solicitud.cutoff_date)}
           </p>
         </div>
         <span className={cn('text-xs font-semibold px-2.5 py-1 rounded-md', ESTADO_CONFIG[state] ?? 'text-foreground/60 bg-foreground/10')}>

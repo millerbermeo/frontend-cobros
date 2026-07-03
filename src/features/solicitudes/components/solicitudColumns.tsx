@@ -3,11 +3,9 @@ import { MdEdit, MdInsertDriveFile } from 'react-icons/md'
 import type { Column } from '@/shared/components/tables/DataTable'
 import { cn } from '@/shared/utils/cn'
 import { creditFileUrl } from '../services/solicitudes.service'
+import { formatCOP } from '@/shared/utils/currency'
+import { formatFecha } from '@/shared/utils/date'
 import type { CreditApplication } from '../types/solicitudes.types'
-
-const currency = new Intl.NumberFormat('es-CO', {
-  style: 'currency', currency: 'COP', maximumFractionDigits: 0,
-})
 
 const ESTADO_CONFIG: Record<string, string> = {
   Pendiente:  'text-amber-700   bg-amber-100   dark:text-amber-300   dark:bg-amber-500/15',
@@ -45,6 +43,10 @@ function ApprovalDocs({ solicitud }: { solicitud: CreditApplication }) {
   )
 }
 
+function FechaCell({ value }: { value: string | null | undefined }) {
+  return <span className="text-sm text-foreground/70 whitespace-nowrap">{formatFecha(value)}</span>
+}
+
 export function buildColumns(
   onEdit: (s: CreditApplication) => void,
 ): Column<Record<string, unknown>>[] {
@@ -71,7 +73,7 @@ export function buildColumns(
     },
     {
       key: 'requested_amount', label: 'Monto',
-      render: (val) => <span className="font-medium text-foreground">{currency.format(Number(val))}</span>,
+      render: (val) => <span className="font-medium text-foreground">{formatCOP(Number(val))}</span>,
     },
     { key: 'rate', label: 'Tasa', render: (val) => `${val}%` },
     { key: 'term', label: 'Plazo', render: (val) => `${val} meses` },
@@ -91,6 +93,14 @@ export function buildColumns(
     {
       key: 'archive_1', label: 'Aprobación',
       render: (_, row) => <ApprovalDocs solicitud={row as unknown as CreditApplication} />,
+    },
+    {
+      key: 'creation_date', label: 'Creación',
+      render: (val) => <FechaCell value={val as string} />,
+    },
+    {
+      key: 'cutoff_date', label: 'Corte',
+      render: (val) => <FechaCell value={val as string} />,
     },
     {
       key: 'state', label: 'Estado',

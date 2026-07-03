@@ -3,6 +3,7 @@ import type {
   CreateCreditApplicationResponse,
   CreditApplicationsParams,
   CreditApplicationsResponse,
+  CustomerSearchResponse,
 } from '../types/solicitudes.types'
 import type { SolicitudFormValues } from '../schemas/solicitud.schema'
 
@@ -22,6 +23,7 @@ function toFormData(values: SolicitudFormValues): FormData {
   fd.append('rate', values.rate)
   fd.append('term', values.term)
   fd.append('warranty', values.warranty ?? '')
+  fd.append('cutoff_date', values.cutoff_date ?? '')
   fd.append('state', values.state)
   appendFile(fd, 'archive_document', values.archive_document)
   appendFile(fd, 'archive_payment_stub', values.archive_payment_stub)
@@ -32,6 +34,8 @@ function toFormData(values: SolicitudFormValues): FormData {
 export const solicitudesService = {
   list: (params: CreditApplicationsParams = {}) =>
     api.get<CreditApplicationsResponse>('/list/credit_application.php', { params }),
+  searchCustomers: (term: string) =>
+    api.get<CustomerSearchResponse>('/list/search_customer.php', { params: { term } }),
   create: (values: SolicitudFormValues) =>
     api.post<CreateCreditApplicationResponse>('/create/c_credit_application.php', toFormData(values), {
       headers: { 'Content-Type': 'multipart/form-data' },

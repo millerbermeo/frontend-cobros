@@ -1,13 +1,23 @@
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
+import { isNotFoundError } from '@/shared/utils/apiError'
 import { solicitudesService } from '../services/solicitudes.service'
-import type { CreditApplicationsParams } from '../types/solicitudes.types'
+import type { CreditApplicationsParams, CreditApplicationsResponse } from '../types/solicitudes.types'
 
 const QUERY_KEY = 'solicitudes'
+
+const EMPTY_RESPONSE: CreditApplicationsResponse = { success: true, data: [] }
 
 export function useCreditApplications(params: CreditApplicationsParams) {
   return useQuery({
     queryKey: [QUERY_KEY, params],
-    queryFn: () => solicitudesService.list(params).then((r) => r.data),
+    queryFn: () =>
+      solicitudesService
+        .list(params)
+        .then((r) => r.data)
+        .catch((err) => {
+          if (isNotFoundError(err)) return EMPTY_RESPONSE
+          throw err
+        }),
     placeholderData: keepPreviousData,
   })
 }

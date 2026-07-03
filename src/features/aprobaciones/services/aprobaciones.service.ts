@@ -1,5 +1,6 @@
 import api from '@/lib/axios'
 import type {
+  ApproveCreditResponse,
   CreditApplicationsParams,
   CreditApplicationsResponse,
   UpdateCreditResponse,
@@ -33,4 +34,12 @@ export const aprobacionesService = {
     api.post<UploadDocumentsResponse>('/create/document_credit_application.php', toDocsFormData(id, values), {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
+  // Aprueba el crédito (cambia estado a Aprobado). form-data: id.
+  approveCredit: (id: number) => {
+    const fd = new FormData()
+    fd.append('id', String(id))
+    return api.post<ApproveCreditResponse>('/create/c_approve_credit.php', fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+  },
 }

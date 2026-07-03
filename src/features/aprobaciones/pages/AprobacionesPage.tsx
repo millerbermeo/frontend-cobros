@@ -13,16 +13,26 @@ import type { CreditApplication } from '../types/aprobaciones.types'
 const FILTER_INPUT_CLASS =
   'w-full sm:w-56 pl-9 pr-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary'
 
+const FILTER_SELECT_CLASS =
+  'w-full sm:w-44 px-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary'
+
+const ESTADO_OPTIONS = ['Pendiente', 'Validación', 'Aprobado', 'Rechazado'] as const
+
 export function AprobacionesPage() {
   const { open, close } = useModal()
   const [documentInput, setDocumentInput] = useState('')
   const [nameInput, setNameInput] = useState('')
+  const [stateFilter, setStateFilter] = useState('')
 
   const document = useDebounce(documentInput, 400)
   const name = useDebounce(nameInput, 400)
   const filters = useMemo(
-    () => ({ ...(document ? { document } : {}), ...(name ? { name } : {}) }),
-    [document, name],
+    () => ({
+      ...(document ? { document } : {}),
+      ...(name ? { name } : {}),
+      ...(stateFilter ? { state: stateFilter } : {}),
+    }),
+    [document, name, stateFilter],
   )
 
   const { data, isLoading, isError, hasNextPage, isFetchingNextPage, fetchNextPage } =
@@ -60,6 +70,16 @@ export function AprobacionesPage() {
               placeholder="Nombre..." className={FILTER_INPUT_CLASS}
             />
           </div>
+          <select
+            value={stateFilter}
+            onChange={(e) => setStateFilter(e.target.value)}
+            className={FILTER_SELECT_CLASS}
+          >
+            <option value="">Todos los estados</option>
+            {ESTADO_OPTIONS.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
         </div>
       </div>
 

@@ -8,6 +8,8 @@ export interface CreditApplication {
   rate: string
   term: number
   warranty: string
+  cutoff_date?: string | null
+  creation_date?: string | null
   archive_document: string
   archive_payment_stub: string
   archive_other: string
@@ -37,10 +39,23 @@ export interface CreditApplicationsParams {
   per_page?: number
   document?: string
   name?: string
+  state?: string
 }
 
 export interface CreateCreditApplicationResponse {
   success: boolean
   message: string
   id: number
+}
+
+/** Resultado de GET /list/search_customer.php?term= */
+export interface CustomerSearchResult {
+  id: number
+  text: string
+  name: string
+  document: string
+}
+
+export interface CustomerSearchResponse {
+  results: CustomerSearchResult[]
 }

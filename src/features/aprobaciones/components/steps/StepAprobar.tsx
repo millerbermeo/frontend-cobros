@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@heroui/react'
-import { MdCheckCircle, MdInsertDriveFile } from 'react-icons/md'
+import { MdCheckCircle, MdInsertDriveFile, MdCloudUpload } from 'react-icons/md'
 import { FormFileUpload } from '@/shared/components/forms'
 import { creditFileUrl } from '@/shared/utils/creditFile'
 import { docsAprobacionSchema, type DocsAprobacionValues } from '../../schemas/aprobacion.schema'
@@ -9,9 +9,15 @@ import type { CreditApplication } from '../../types/aprobaciones.types'
 
 interface StepAprobarProps {
   solicitud: CreditApplication
-  onApprove: (values: DocsAprobacionValues) => void
+  /** Fase 1: subir documentos (archive_1 obligatorio). */
+  onUpload: (values: DocsAprobacionValues) => void
+  /** Fase 2: aprobar crédito (endpoint c_approve_credit.php). */
+  onApprove: () => void
   onBack: () => void
-  isSubmitting?: boolean
+  /** true cuando los documentos ya se subieron → habilita "Aprobar crédito". */
+  docsUploaded?: boolean
+  isUploading?: boolean
+  isApproving?: boolean
   readOnly?: boolean
 }
 
@@ -58,9 +64,16 @@ function ReadOnlyDocs({ solicitud, onBack }: { solicitud: CreditApplication; onB
   )
 }
 
-export function StepAprobar({ solicitud, onApprove, onBack, isSubmitting, readOnly }: StepAprobarProps) {
-  if (readOnly) return <ReadOnlyDocs solicitud={solicitud} onBack={onBack} />
-
+export function StepAprobar({
+  solicitud,
+  onUpload,
+  onApprove,
+  onBack,
+  docsUploaded,
+  isUploading,
+  isApproving,
+  readOnly,
+}: StepAprobarProps) {
   const { control, handleSubmit } = useForm<DocsAprobacionValues>({
     resolver: zodResolver(docsAprobacionSchema),
     mode: 'onTouched',
@@ -68,11 +81,14 @@ export function StepAprobar({ solicitud, onApprove, onBack, isSubmitting, readOn
     defaultValues: { archive_1: undefined, archive_2: undefined, archive_3: undefined },
   })
 
+  if (readOnly) return <ReadOnlyDocs solicitud={solicitud} onBack={onBack} />
+
   return (
-    <form onSubmit={handleSubmit(onApprove)} className="flex flex-col gap-5">
+    <form onSubmit={handleSubmit(onUpload)} className="flex flex-col gap-5">
       <p className="text-sm text-foreground/60">
-        Adjunta los documentos finales del crédito y aprueba la solicitud.
-        El primer documento es obligatorio.
+        {docsUploaded
+          ? 'Documentos subidos. Ya puedes aprobar el crédito.'
+          : 'Sube los documentos finales del crédito (el primero es obligatorio) y luego aprueba.'}
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -103,13 +119,32 @@ export function StepAprobar({ solicitud, onApprove, onBack, isSubmitting, readOn
       </div>
 
       <div className="flex justify-between gap-2 pt-2 border-t border-border">
-        <Button type="button" variant="ghost" onPress={onBack} isDisabled={isSubmitting}>
+        <Button type="button" variant="ghost" onPress={onBack} isDisabled={isUploading || isApproving}>
           Atrás
         </Button>
-        <Button type="submit" variant="primary" className="gap-1.5" isPending={isSubmitting}>
-          <MdCheckCircle className="h-4 w-4" />
-          Aprobar crédito
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            type="submit"
+            variant={docsUploaded ? 'outline' : 'primary'}
+            className="gap-1.5"
+            isPending={isUploading}
+          >
+            <MdCloudUpload className="h-4 w-4" />
+            {docsUploaded ? 'Reemplazar documentos' : 'Subir documentos'}
+          </Button>
+          {docsUploaded && (
+            <Button
+              type="button"
+              variant="primary"
+              className="gap-1.5 bg-emerald-600 hover:bg-emerald-700"
+              onPress={onApprove}
+              isPending={isApproving}
+            >
+              <MdCheckCircle className="h-4 w-4" />
+              Aprobar crédito
+            </Button>
+          )}
+        </div>
       </div>
     </form>
   )

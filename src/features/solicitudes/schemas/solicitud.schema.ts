@@ -49,6 +49,7 @@ export const solicitudSchema = z.object({
   rate: numericPositive('La tasa debe ser mayor a 0'),
   term: numericPositive('El plazo debe ser mayor a 0'),
   warranty: z.string().optional().or(z.literal('')),
+  cutoff_date: z.string().optional().or(z.literal('')),
   state: z.string().min(1, 'Selecciona el estado'),
   archive_document: requiredFile('Adjunta el documento de identidad'),
   archive_payment_stub: requiredFile('Adjunta el desprendible de pago'),

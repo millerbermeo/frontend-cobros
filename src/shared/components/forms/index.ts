@@ -1,4 +1,5 @@
 export { FormInput } from './FormInput'
+export { FormMoneyInput } from './FormMoneyInput'
 export { FormTextarea } from './FormTextarea'
 export { FormSelect } from './FormSelect'
 export type { SelectOption } from './FormSelect'
