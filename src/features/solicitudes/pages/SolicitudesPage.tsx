@@ -1,98 +1,167 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
+import { isAxiosError } from 'axios'
 import { Button } from '@heroui/react'
-import { MdAdd } from 'react-icons/md'
-import { DataTable, type Column } from '@/shared/components/tables/DataTable'
+import { MdAdd, MdDescription, MdSearch } from 'react-icons/md'
 import { useModal } from '@/app/store/modal.store'
 import { alert } from '@/shared/utils/alert'
-import { cn } from '@/shared/utils/cn'
+import { useDebounce } from '@/shared/hooks/useDebounce'
+import { DataTable } from '@/shared/components/tables/DataTable'
+import { SolicitudesLayout } from '../layouts/SolicitudesLayout'
 import { SolicitudForm } from '../components/SolicitudForm'
-import { MOCK_SOLICITUDES } from '../data/solicitudes.mock'
-import type { EstadoSolicitud, Solicitud } from '../types/solicitudes.types'
+import { buildColumns } from '../components/solicitudColumns'
+import { useCreditApplications, useCreateSolicitud, useUpdateSolicitud } from '../hooks/useSolicitudes'
+import type { CreditApplication } from '../types/solicitudes.types'
 import type { SolicitudFormValues } from '../schemas/solicitud.schema'
 
-const ESTADO_CONFIG: Record<EstadoSolicitud, string> = {
-  pendiente:  'text-amber-700   bg-amber-100   dark:text-amber-300  dark:bg-amber-500/15',
-  validacion: 'text-sky-700     bg-sky-100     dark:text-sky-300    dark:bg-sky-500/15',
-  aprobado:   'text-emerald-700 bg-emerald-100 dark:text-emerald-300 dark:bg-emerald-500/15',
-  rechazado:  'text-rose-700    bg-rose-100    dark:text-rose-300   dark:bg-rose-500/15',
+const FILTER_INPUT_CLASS =
+  'w-full sm:w-48 pl-9 pr-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary'
+
+function apiErrorMessage(err: unknown, fallback: string): string {
+  const data = isAxiosError(err) ? (err.response?.data as { error?: string; message?: string }) : undefined
+  return data?.error || data?.message || fallback
 }
-
-const currency = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 })
-
-const columns: Column<Record<string, unknown>>[] = [
-  { key: 'cliente', label: 'Cliente', sortable: true,
-    render: (val) => <span className="font-medium text-foreground">{String(val)}</span> },
-  { key: 'tipo', label: 'Tipo',
-    render: (val) => <span className="capitalize text-foreground/70">{String(val)}</span> },
-  { key: 'monto', label: 'Monto',
-    render: (val) => <span className="font-medium text-foreground">{currency.format(Number(val))}</span> },
-  { key: 'tasa', label: 'Tasa', render: (val) => `${val}%` },
-  { key: 'plazo', label: 'Plazo', render: (val) => `${val} meses` },
-  { key: 'fecha', label: 'Fecha',
-    render: (val) => <span className="text-foreground/60">{String(val)}</span> },
-  { key: 'estado', label: 'Estado',
-    render: (val) => {
-      const estado = val as EstadoSolicitud
-      return (
-        <span className={cn('text-xs font-semibold px-2.5 py-1 rounded-md capitalize', ESTADO_CONFIG[estado])}>
-          {estado}
-        </span>
-      )
-    } },
-]
 
 export function SolicitudesPage() {
   const { open, close } = useModal()
-  const [solicitudes, setSolicitudes] = useState<Solicitud[]>(MOCK_SOLICITUDES)
+  const createSolicitud = useCreateSolicitud()
+  const updateSolicitud = useUpdateSolicitud()
 
-  const handleCreate = (data: SolicitudFormValues) => {
-    const nueva: Solicitud = {
-      id: `s${Date.now()}`,
-      cliente: data.cliente,
-      tipo: data.tipo,
-      monto: Number(data.monto),
-      tasa: Number(data.tasa),
-      plazo: Number(data.plazo),
-      garantia: data.garantia,
-      fecha: new Date().toISOString().slice(0, 10),
-      estado: 'pendiente',
+  const [page, setPage] = useState(1)
+  const [perPage, setPerPage] = useState(10)
+  const [documentInput, setDocumentInput] = useState('')
+  const [nameInput, setNameInput] = useState('')
+
+  const document = useDebounce(documentInput, 400)
+  const name = useDebounce(nameInput, 400)
+
+  const params = useMemo(
+    () => ({
+      page,
+      per_page: perPage,
+      ...(document ? { document } : {}),
+      ...(name ? { name } : {}),
+    }),
+    [page, perPage, document, name],
+  )
+
+  const { data, isLoading, isFetching } = useCreditApplications(params)
+
+  // El backend devuelve `data` como array (listado) o como objeto único
+  // (cuando el filtro por document encuentra 1 resultado) y sin `pagination`.
+  const raw = data?.data
+  const solicitudes = Array.isArray(raw) ? raw : raw ? [raw] : []
+  const pag = data?.pagination
+  const total = Number(pag?.total ?? solicitudes.length)
+  const totalPages = pag?.last_page ?? 1
+  const currentPage = pag?.current_page ?? page
+
+  const resetTo = (setter: (v: string) => void) => (v: string) => {
+    setter(v)
+    setPage(1)
+  }
+
+  const handleCreate = async (formData: SolicitudFormValues) => {
+    alert.loading('Creando solicitud...')
+    try {
+      const res = await createSolicitud.mutateAsync(formData)
+      alert.closeLoading()
+      close()
+      alert.toast(res.data.message || 'Solicitud creada')
+      setPage(1)
+    } catch (err) {
+      alert.closeLoading()
+      alert.error('Error', apiErrorMessage(err, 'No se pudo crear la solicitud'))
     }
-    setSolicitudes((prev) => [nueva, ...prev])
-    close()
-    alert.toast('Solicitud creada correctamente')
+  }
+
+  const handleEdit = (solicitud: CreditApplication) => async (formData: SolicitudFormValues) => {
+    alert.loading('Actualizando solicitud...')
+    try {
+      const res = await updateSolicitud.mutateAsync({ id: solicitud.id, data: formData })
+      alert.closeLoading()
+      close()
+      alert.toast(res.data.message || 'Solicitud actualizada')
+    } catch (err) {
+      alert.closeLoading()
+      alert.error('Error', apiErrorMessage(err, 'No se pudo actualizar la solicitud'))
+    }
   }
 
   const openCreate = () => {
     open({
-      title: 'Nueva Solicitud de Crédito',
+      title: 'Nueva solicitud de crédito',
       size: 'lg',
       content: <SolicitudForm onSuccess={handleCreate} onCancel={close} />,
     })
   }
 
+  const openEdit = (solicitud: CreditApplication) => {
+    open({
+      title: 'Editar solicitud de crédito',
+      size: 'lg',
+      content: <SolicitudForm solicitud={solicitud} onSuccess={handleEdit(solicitud)} onCancel={close} />,
+    })
+  }
+
+  const filters = (
+    <>
+      <div className="relative">
+        <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-muted w-4 h-4" />
+        <input
+          type="text"
+          value={documentInput}
+          onChange={(e) => resetTo(setDocumentInput)(e.target.value)}
+          placeholder="Documento..."
+          className={FILTER_INPUT_CLASS}
+        />
+      </div>
+      <div className="relative">
+        <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-muted w-4 h-4" />
+        <input
+          type="text"
+          value={nameInput}
+          onChange={(e) => resetTo(setNameInput)(e.target.value)}
+          placeholder="Nombre..."
+          className={FILTER_INPUT_CLASS}
+        />
+      </div>
+    </>
+  )
+
   return (
-    <div className="flex flex-col gap-6">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">Solicitudes de Crédito</h1>
-          <p className="text-sm text-foreground/50 mt-0.5">Gestión de solicitudes y aprobaciones</p>
+    <SolicitudesLayout>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+            <MdDescription className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-foreground">Solicitudes de Crédito</h1>
+            <p className="text-xs text-foreground/45">{total} solicitudes registradas</p>
+          </div>
         </div>
-        <Button variant="primary" className="gap-1.5" onPress={openCreate}>
+        <Button variant="primary" onPress={openCreate} className="self-start sm:self-auto gap-1.5">
           <MdAdd className="w-4 h-4" />
-          Nueva Solicitud
+          Nueva solicitud
         </Button>
       </div>
 
-      {/* Table */}
-      <div className="rounded-2xl border border-border bg-card shadow-sm p-5">
+      <div className="bg-card rounded-2xl border border-border shadow-sm p-5">
         <DataTable
-          columns={columns}
+          columns={buildColumns(openEdit)}
           data={solicitudes as unknown as Record<string, unknown>[]}
           rowKey="id"
-          emptyMessage="No hay solicitudes registradas"
+          isLoading={isLoading || isFetching}
+          filtersComponent={filters}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={total}
+          pageSize={perPage}
+          onPageChange={setPage}
+          onPageSizeChange={(s) => { setPerPage(s); setPage(1) }}
+          emptyMessage="No se encontraron solicitudes"
         />
       </div>
-    </div>
+    </SolicitudesLayout>
   )
 }

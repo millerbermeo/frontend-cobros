@@ -18,11 +18,16 @@ const SIZE_CLASS: Record<ModalSize, string> = {
 export function GlobalModal() {
   const isOpen  = useModalStore((s) => s.isOpen)
   const config  = useModalStore((s) => s.config)
+  const openId  = useModalStore((s) => s.openId)
   const close   = useModalStore((s) => s.close)
 
   // Keep config alive during exit transition
   const lastConfig = useRef(config)
-  if (config) lastConfig.current = config
+  const lastId = useRef(openId)
+  if (config) {
+    lastConfig.current = config
+    lastId.current = openId
+  }
   const display = lastConfig.current
 
   return createPortal(
@@ -67,8 +72,8 @@ export function GlobalModal() {
               </button>
             </div>
 
-            {/* Body */}
-            <div className="px-6 py-5 max-h-[75vh] overflow-y-auto">
+            {/* Body — key por openId remonta el contenido en cada apertura (form limpio) */}
+            <div key={lastId.current} className="px-6 py-5 max-h-[75vh] overflow-y-auto">
               {display.content}
             </div>
 

@@ -61,7 +61,7 @@ export function FormFileUpload<T extends FieldValues>({
               {fileList.length > 0 ? (
                 <div className="flex flex-col gap-1">
                   {fileList.map((file, i) => (
-                    <span key={i} className="text-sm font-medium text-foreground">
+                    <span key={i} className="text-sm font-medium text-foreground break-all line-clamp-2">
                       {file.name}
                     </span>
                   ))}

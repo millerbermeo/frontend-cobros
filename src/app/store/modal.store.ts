@@ -28,6 +28,8 @@ export interface ModalConfig {
 interface ModalStore {
   isOpen: boolean
   config: ModalConfig | null
+  /** Incrementa en cada open() — se usa como React key para remontar el contenido (form limpio). */
+  openId: number
   open: (config: ModalConfig) => void
   close: () => void
 }
@@ -35,7 +37,8 @@ interface ModalStore {
 export const useModalStore = create<ModalStore>((set) => ({
   isOpen: false,
   config: null,
-  open: (config) => set({ isOpen: true, config }),
+  openId: 0,
+  open: (config) => set((s) => ({ isOpen: true, config, openId: s.openId + 1 })),
   close: () => set({ isOpen: false }),
 }))
 

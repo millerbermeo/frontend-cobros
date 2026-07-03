@@ -1,20 +1,14 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { solicitudesService } from '../services/solicitudes.service'
+import type { CreditApplicationsParams } from '../types/solicitudes.types'
 
 const QUERY_KEY = 'solicitudes'
 
-export function useSolicitudes() {
+export function useCreditApplications(params: CreditApplicationsParams) {
   return useQuery({
-    queryKey: [QUERY_KEY],
-    queryFn: () => solicitudesService.getAll().then((r) => r.data),
-  })
-}
-
-export function useSolicitud(id: string) {
-  return useQuery({
-    queryKey: [QUERY_KEY, id],
-    queryFn: () => solicitudesService.getById(id).then((r) => r.data),
-    enabled: !!id,
+    queryKey: [QUERY_KEY, params],
+    queryFn: () => solicitudesService.list(params).then((r) => r.data),
+    placeholderData: keepPreviousData,
   })
 }
 
@@ -29,7 +23,7 @@ export function useCreateSolicitud() {
 export function useUpdateSolicitud() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Parameters<typeof solicitudesService.update>[1]> }) =>
+    mutationFn: ({ id, data }: { id: number | string; data: Parameters<typeof solicitudesService.update>[1] }) =>
       solicitudesService.update(id, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEY] }),
   })
