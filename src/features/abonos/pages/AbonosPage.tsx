@@ -63,8 +63,8 @@ export function AbonosPage() {
 
   const openAbonar = (credito: CreditoActivo) => {
     open({
-      title: 'Registrar Abono',
-      size: 'sm',
+      title: 'Registrar Nuevo Abono',
+      size: 'full',
       content: <AbonoForm credito={credito} onSuccess={handleAbonar(credito)} onCancel={close} />,
     })
   }

@@ -29,6 +29,14 @@ export function useCreditosActivos(params: CreditosActivosParams) {
   })
 }
 
+export function useCreditoConRetiros(id: number | undefined) {
+  return useQuery({
+    queryKey: [QUERY_KEY, 'credito-retiros', id],
+    queryFn: () => abonosService.getCreditoConRetiros(id as number).then((r) => r.data),
+    enabled: id !== undefined,
+  })
+}
+
 export function useCreateAbono() {
   const qc = useQueryClient()
   return useMutation({

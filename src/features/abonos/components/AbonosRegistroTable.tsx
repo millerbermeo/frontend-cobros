@@ -9,6 +9,7 @@ const PAGE_SIZE = 10
 const TIPO_CONFIG: Record<AbonoRegistro['tipo'], string> = {
   interes: 'text-violet-700 bg-violet-100 dark:text-violet-300 dark:bg-violet-500/15',
   capital: 'text-sky-700   bg-sky-100    dark:text-sky-300    dark:bg-sky-500/15',
+  ambos:   'text-amber-700 bg-amber-100  dark:text-amber-300  dark:bg-amber-500/15',
 }
 
 const columns: Column<Record<string, unknown>>[] = [

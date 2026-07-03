@@ -10,7 +10,7 @@ export interface Abono {
   createdAt: string
 }
 
-export type TipoAbono = 'interes' | 'capital'
+export type TipoAbono = 'interes' | 'capital' | 'ambos'
 
 /** Crédito activo tal cual lo devuelve el backend (GET /list/payments.php) */
 export interface CreditoActivo {
@@ -37,6 +37,29 @@ export interface CreditosActivosResponse {
   success: boolean
   total: number
   data: CreditoActivo[]
+}
+
+/** Retiro disponible tal cual lo devuelve el backend (GET /list/credit_withdrawals.php) */
+export interface RetiroDisponible {
+  id: number
+  name: string
+  document: string
+  withdrawal_date: string
+  withdrawal_hour: string
+  amount: number
+  concept: string
+  authorized_by: string
+  withdrawn_by: string
+  registration_date: string
+  state: string
+}
+
+export interface CreditoConRetirosResponse {
+  success: boolean
+  credito: CreditoActivo
+  retiros_disponibles: RetiroDisponible[]
+  cantidad_retiros: number
+  total_disponible: number
 }
 
 export interface AbonoRegistro {
