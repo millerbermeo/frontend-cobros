@@ -16,7 +16,7 @@ const ESTADO_CONFIG: Record<string, string> = {
   Rechazado:  'text-rose-700    bg-rose-100    dark:text-rose-300    dark:bg-rose-500/15',
 }
 
-function FileLink({ raw }: { raw: string }) {
+function FileLink({ raw, label = 'Ver' }: { raw: string | null | undefined; label?: string }) {
   const url = creditFileUrl(raw)
   if (!url) return <span className="text-xs text-foreground/30">—</span>
   return (
@@ -27,8 +27,21 @@ function FileLink({ raw }: { raw: string }) {
       className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
     >
       <MdInsertDriveFile className="w-4 h-4" />
-      Ver
+      {label}
     </a>
+  )
+}
+
+function ApprovalDocs({ solicitud }: { solicitud: CreditApplication }) {
+  const docs = [solicitud.archive_1, solicitud.archive_2, solicitud.archive_3]
+  const present = docs.filter((d) => creditFileUrl(d))
+  if (present.length === 0) return <span className="text-xs text-foreground/30">—</span>
+  return (
+    <div className="flex items-center gap-3">
+      {present.map((raw, i) => (
+        <FileLink key={i} raw={raw} label={`Doc ${i + 1}`} />
+      ))}
+    </div>
   )
 }
 
@@ -74,6 +87,10 @@ export function buildColumns(
           </div>
         )
       },
+    },
+    {
+      key: 'archive_1', label: 'Aprobación',
+      render: (_, row) => <ApprovalDocs solicitud={row as unknown as CreditApplication} />,
     },
     {
       key: 'state', label: 'Estado',

@@ -7,6 +7,10 @@ interface ApprovalStepperProps {
   completados: number
   /** Si el flujo fue rechazado, no hay paso activo. */
   rechazado?: boolean
+  /** Navegar al hacer clic en un paso (solo si está habilitado). */
+  onSelect?: (index: number) => void
+  /** Determina si un paso es navegable. Por defecto todos deshabilitados. */
+  isStepEnabled?: (index: number) => boolean
 }
 
 type NodeState = 'done' | 'active' | 'pending'
@@ -23,13 +27,14 @@ const NODE_STYLES: Record<NodeState, string> = {
   pending: 'bg-card text-foreground/30 border-border',
 }
 
-export function ApprovalStepper({ completados, rechazado = false }: ApprovalStepperProps) {
+export function ApprovalStepper({ completados, rechazado = false, onSelect, isStepEnabled }: ApprovalStepperProps) {
   return (
     <ol className="flex items-start">
       {APPROVAL_STEPS.map((label, index) => {
         const state = resolveState(index, completados, rechazado)
         const isLast = index === APPROVAL_STEPS.length - 1
         const connectorDone = index < completados
+        const enabled = !!onSelect && !!isStepEnabled?.(index)
 
         return (
           <li key={label} className="flex flex-1 flex-col items-center last:flex-none">
@@ -39,16 +44,20 @@ export function ApprovalStepper({ completados, rechazado = false }: ApprovalStep
                   <span className={cn('block h-0.5 w-full', index <= completados ? 'bg-emerald-500' : 'bg-border')} />
                 )}
               </span>
-              <span
+              <button
+                type="button"
+                disabled={!enabled}
+                onClick={() => enabled && onSelect?.(index)}
                 className={cn(
                   'flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 transition-colors',
                   NODE_STYLES[state],
+                  enabled ? 'cursor-pointer hover:brightness-95' : 'cursor-default',
                 )}
               >
                 {state === 'done'
                   ? <MdCheck className="h-4 w-4" />
                   : <MdPriorityHigh className="h-4 w-4" />}
-              </span>
+              </button>
               <span className="flex-1">
                 {!isLast && (
                   <span className={cn('block h-0.5 w-full', connectorDone ? 'bg-emerald-500' : 'bg-border')} />
@@ -57,7 +66,7 @@ export function ApprovalStepper({ completados, rechazado = false }: ApprovalStep
             </div>
             <span
               className={cn(
-                'mt-2 max-w-[8rem] text-center text-xs',
+                'mt-2 max-w-32 text-center text-xs',
                 state === 'pending' ? 'text-foreground/40' : 'text-foreground/70',
               )}
             >

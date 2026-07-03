@@ -1,14 +1,16 @@
 import { useState } from 'react'
 import { isAxiosError } from 'axios'
 import { Button } from '@heroui/react'
+import { MdCancel } from 'react-icons/md'
 import { alert } from '@/shared/utils/alert'
 import { ApprovalStepper } from './ApprovalStepper'
 import { StepDocumentos } from './steps/StepDocumentos'
 import { StepTasaPlazo } from './steps/StepTasaPlazo'
 import { StepAprobar } from './steps/StepAprobar'
-import { useUpdateCredit } from '../hooks/useAprobaciones'
+import { useUpdateCredit, useUploadDocuments } from '../hooks/useAprobaciones'
+import { TOTAL_STEPS } from '../constants'
 import type { CreditApplication } from '../types/aprobaciones.types'
-import type { TasaPlazoValues } from '../schemas/aprobacion.schema'
+import type { TasaPlazoValues, DocsAprobacionValues } from '../schemas/aprobacion.schema'
 
 interface AprobacionWizardProps {
   solicitud: CreditApplication
@@ -20,10 +22,18 @@ function apiError(err: unknown, fallback: string): string {
   return data?.error || data?.message || fallback
 }
 
+/** Estado actual → paso inicial del wizard. */
+function stateToStep(state: string): number {
+  if (state === 'Validación') return 1
+  if (state === 'Aprobado') return 2
+  return 0
+}
+
 export function AprobacionWizard({ solicitud, onDone }: AprobacionWizardProps) {
-  const [step, setStep] = useState(0)
+  const [step, setStep] = useState(() => stateToStep(solicitud.state))
   const [terms, setTerms] = useState({ rate: solicitud.rate, term: solicitud.term })
   const updateCredit = useUpdateCredit()
+  const uploadDocuments = useUploadDocuments()
 
   const runUpdate = async (rate: number, term: number, state: string, loading: string, ok: string) => {
     alert.loading(loading)
@@ -39,6 +49,22 @@ export function AprobacionWizard({ solicitud, onDone }: AprobacionWizardProps) {
     }
   }
 
+  const handleValidarDocs = async () => {
+    const ok = await runUpdate(
+      Number(terms.rate), Number(terms.term), 'Validación',
+      'Validando documentos...', 'Documentos validados',
+    )
+    if (ok) setStep(1)
+  }
+
+  const handleReject = async () => {
+    const ok = await runUpdate(
+      Number(terms.rate), Number(terms.term), 'Rechazado',
+      'Rechazando solicitud...', 'Solicitud rechazada',
+    )
+    if (ok) onDone()
+  }
+
   const handleTasaPlazo = async (values: TasaPlazoValues) => {
     const rate = Number(values.rate)
     const term = Number(values.term)
@@ -48,20 +74,46 @@ export function AprobacionWizard({ solicitud, onDone }: AprobacionWizardProps) {
     setStep(2)
   }
 
-  const handleApprove = async () => {
+  const handleApprove = async (values: DocsAprobacionValues) => {
+    alert.loading('Subiendo documentos...')
+    try {
+      await uploadDocuments.mutateAsync({ id: solicitud.id, values })
+    } catch (err) {
+      alert.closeLoading()
+      alert.error('Error', apiError(err, 'No se pudieron subir los documentos'))
+      return
+    }
+    alert.closeLoading()
     const ok = await runUpdate(Number(terms.rate), Number(terms.term), 'Aprobado', 'Aprobando crédito...', 'Crédito aprobado')
     if (ok) onDone()
   }
 
+  const busy = updateCredit.isPending || uploadDocuments.isPending
+  const finalizado = solicitud.state === 'Aprobado' || solicitud.state === 'Rechazado'
+  const showReject = step < TOTAL_STEPS - 1 && !finalizado
+  // Paso 1 siempre; pasos 2 y 3 solo si ya está validado o ya se alcanzaron.
+  const validado = solicitud.state === 'Validación' || solicitud.state === 'Aprobado'
+  const isStepEnabled = (i: number) => i === 0 || i <= step || validado
+
   return (
     <div className="flex flex-col gap-6">
-      <ApprovalStepper completados={step} />
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1">
+          <ApprovalStepper completados={step} onSelect={setStep} isStepEnabled={isStepEnabled} />
+        </div>
+        {showReject && (
+          <Button variant="danger" size="sm" className="gap-1.5 shrink-0" onPress={handleReject} isDisabled={busy}>
+            <MdCancel className="h-4 w-4" />
+            Rechazar
+          </Button>
+        )}
+      </div>
 
       {step === 0 && (
         <>
           <StepDocumentos solicitud={solicitud} />
           <div className="flex justify-end pt-2 border-t border-border">
-            <Button variant="primary" onPress={() => setStep(1)}>
+            <Button variant="primary" onPress={handleValidarDocs} isPending={updateCredit.isPending}>
               Documentos validados, continuar
             </Button>
           </div>
@@ -79,9 +131,10 @@ export function AprobacionWizard({ solicitud, onDone }: AprobacionWizardProps) {
 
       {step === 2 && (
         <StepAprobar
+          solicitud={solicitud}
           onApprove={handleApprove}
           onBack={() => setStep(1)}
-          isSubmitting={updateCredit.isPending}
+          isSubmitting={uploadDocuments.isPending || updateCredit.isPending}
         />
       )}
     </div>

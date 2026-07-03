@@ -4,7 +4,7 @@ import { cn } from '@/shared/utils/cn'
 import { creditFileUrl } from '@/shared/utils/creditFile'
 import type { CreditApplication } from '../types/aprobaciones.types'
 
-function DocLink({ label, raw }: { label: string; raw: string }) {
+function DocLink({ label, raw }: { label: string; raw: string | null | undefined }) {
   const url = creditFileUrl(raw)
   if (!url) return null
   return (
@@ -37,7 +37,10 @@ interface AprobacionCardProps {
 export function AprobacionCard({ solicitud, onProcess }: AprobacionCardProps) {
   const { name, document, type_credit, requested_amount, term, rate, state } = solicitud
   const { archive_document, archive_payment_stub, archive_other } = solicitud
-  const finalizado = state === 'Aprobado' || state === 'Rechazado'
+  const { archive_1, archive_2, archive_3 } = solicitud
+  const aprobado = state === 'Aprobado'
+  const rechazado = state === 'Rechazado'
+  const hasApprovalDocs = !!(archive_1 || archive_2 || archive_3)
 
   return (
     <div className="rounded-2xl border border-border bg-card shadow-sm p-5">
@@ -61,10 +64,24 @@ export function AprobacionCard({ solicitud, onProcess }: AprobacionCardProps) {
         <DocLink label="Otros" raw={archive_other} />
       </div>
 
+      {hasApprovalDocs && (
+        <div className="mt-2 flex flex-wrap items-center gap-4">
+          <span className="text-xs text-foreground/40">Aprobación:</span>
+          <DocLink label="Doc 1" raw={archive_1} />
+          <DocLink label="Doc 2" raw={archive_2} />
+          <DocLink label="Doc 3" raw={archive_3} />
+        </div>
+      )}
+
       <div className="mt-4 flex justify-end">
-        <Button variant="primary" className="gap-1.5" onPress={() => onProcess(solicitud)} isDisabled={finalizado}>
-          {finalizado ? 'Finalizado' : 'Procesar solicitud'}
-          {!finalizado && <MdArrowForward className="h-4 w-4" />}
+        <Button
+          variant={aprobado ? 'outline' : 'primary'}
+          className="gap-1.5"
+          onPress={() => onProcess(solicitud)}
+          isDisabled={rechazado}
+        >
+          {rechazado ? 'Rechazado' : aprobado ? 'Ver solicitud' : 'Procesar solicitud'}
+          {!rechazado && !aprobado && <MdArrowForward className="h-4 w-4" />}
         </Button>
       </div>
     </div>

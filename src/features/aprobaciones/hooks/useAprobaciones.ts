@@ -5,6 +5,7 @@ import type {
   CreditApplicationsParams,
   CreditApplicationsResponse,
 } from '../types/aprobaciones.types'
+import type { DocsAprobacionValues } from '../schemas/aprobacion.schema'
 
 const QUERY_KEY = 'aprobaciones'
 export const PER_PAGE = 10
@@ -40,6 +41,15 @@ export function useUpdateCredit() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: aprobacionesService.update,
+    onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEY] }),
+  })
+}
+
+export function useUploadDocuments() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, values }: { id: number; values: DocsAprobacionValues }) =>
+      aprobacionesService.uploadDocuments(id, values),
     onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEY] }),
   })
 }

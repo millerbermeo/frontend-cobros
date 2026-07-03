@@ -12,6 +12,10 @@ export interface CreditApplication {
   archive_payment_stub: string
   archive_other: string
   state: string
+  /** Documentos de aprobación (nullables) */
+  archive_1?: string | null
+  archive_2?: string | null
+  archive_3?: string | null
 }
 
 export interface Pagination {
@@ -46,4 +50,11 @@ export interface UpdateCreditPayload {
 export interface UpdateCreditResponse {
   success: boolean
   message: string
+}
+
+export interface UploadDocumentsResponse {
+  success: boolean
+  message: string
+  affected_rows?: number
+  data?: Record<string, string>
 }
