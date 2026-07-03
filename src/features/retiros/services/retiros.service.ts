@@ -1,10 +1,26 @@
 import api from '@/lib/axios'
-import type { Retiro } from '../types/retiros.types'
+import type { RetiroFormValues } from '../schemas/retiro.schema'
+import type { WithdrawalCreateResponse, WithdrawalsParams, WithdrawalsResponse } from '../types/retiros.types'
+
+/** Mapea el formulario a los campos que espera c_withdrawal.php */
+function toFormData(values: RetiroFormValues): FormData {
+  const fd = new FormData()
+  fd.append('name', values.cliente)
+  fd.append('document', values.documento)
+  fd.append('withdrawal_date', values.fecha)
+  fd.append('withdrawal_hour', values.hora)
+  fd.append('amount', values.monto)
+  fd.append('concept', values.concepto)
+  fd.append('authorized_by', values.autorizadoPor)
+  fd.append('withdrawn_by', values.realizadoPor)
+  return fd
+}
 
 export const retirosService = {
-  getAll: () => api.get<Retiro[]>('/retiros'),
-  getById: (id: string) => api.get<Retiro>(`/retiros/${id}`),
-  create: (data: Omit<Retiro, 'id' | 'createdAt' | 'estado'>) => api.post<Retiro>('/retiros', data),
-  procesar: (id: string) => api.post<Retiro>(`/retiros/${id}/procesar`),
-  cancelar: (id: string) => api.post<Retiro>(`/retiros/${id}/cancelar`),
+  list: (params: WithdrawalsParams = {}) =>
+    api.get<WithdrawalsResponse>('/list/withdrawal.php', { params }),
+  create: (values: RetiroFormValues) =>
+    api.post<WithdrawalCreateResponse>('/create/c_withdrawal.php', toFormData(values), {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
 }

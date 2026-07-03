@@ -3,53 +3,66 @@ import { Button } from '@heroui/react'
 import { MdAdd, MdDescription } from 'react-icons/md'
 import { useModal } from '@/app/store/modal.store'
 import { alert } from '@/shared/utils/alert'
+import { useDebounce } from '@/shared/hooks/useDebounce'
 import { TotalRetirosCard } from '../components/TotalRetirosCard'
 import { RetirosTable } from '../components/RetirosTable'
+import { RetirosFilters } from '../components/RetirosFilters'
 import { RetiroForm } from '../components/RetiroForm'
-import { MOCK_RETIROS } from '../data/retiros.mock'
-import type { RetiroRegistro } from '../types/retiros.types'
+import { useWithdrawals, useCreateRetiro } from '../hooks/useRetiros'
 import type { RetiroFormValues } from '../schemas/retiro.schema'
 
 const currency = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 })
 
-function nowParts() {
-  const d = new Date()
-  return {
-    fecha: d.toISOString().slice(0, 10),
-    hora: d.toTimeString().slice(0, 5),
-  }
-}
-
 export function RetirosPage() {
   const { open, close } = useModal()
-  const [retiros, setRetiros] = useState<RetiroRegistro[]>(MOCK_RETIROS)
+  const createRetiro = useCreateRetiro()
 
-  const total = useMemo(() => retiros.reduce((acc, r) => acc + r.monto, 0), [retiros])
+  const [nameInput, setNameInput] = useState('')
+  const [documentInput, setDocumentInput] = useState('')
+  const name = useDebounce(nameInput, 400)
+  const document = useDebounce(documentInput, 400)
 
-  const handleCreate = (data: RetiroFormValues) => {
-    const { fecha, hora } = nowParts()
-    const nuevo: RetiroRegistro = {
-      id: `r${Date.now()}`,
-      cliente: data.cliente,
-      fecha,
-      hora,
-      monto: Number(data.monto),
-      concepto: data.concepto,
-      realizadoPor: data.realizadoPor,
-      autorizadoPor: data.autorizadoPor,
+  const params = useMemo(
+    () => ({ ...(name ? { name } : {}), ...(document ? { document } : {}) }),
+    [name, document],
+  )
+
+  const { data, isLoading, isFetching } = useWithdrawals(params)
+
+  // El backend devuelve `data` como array o como objeto único (1 resultado).
+  const raw = data?.data
+  const retiros = Array.isArray(raw) ? raw : raw ? [raw] : []
+  const total = useMemo(() => retiros.reduce((acc, r) => acc + Number(r.amount), 0), [retiros])
+
+  const handleCreate = async (formData: RetiroFormValues) => {
+    alert.loading('Registrando retiro...')
+    try {
+      const { data: res } = await createRetiro.mutateAsync(formData)
+      alert.closeLoading()
+      close()
+      alert.toast(res.message || 'Retiro registrado correctamente')
+    } catch {
+      alert.closeLoading()
+      alert.toast('Error al registrar el retiro', 'error')
     }
-    setRetiros((prev) => [nuevo, ...prev])
-    close()
-    alert.toast('Retiro registrado correctamente')
   }
 
   const openCreate = () => {
     open({
       title: 'Registrar Retiro',
       size: 'sm',
-      content: <RetiroForm onSuccess={handleCreate} onCancel={close} />,
+      content: <RetiroForm onSuccess={handleCreate} onCancel={close} isSubmitting={createRetiro.isPending} />,
     })
   }
+
+  const filters = (
+    <RetirosFilters
+      name={nameInput}
+      document={documentInput}
+      onNameChange={setNameInput}
+      onDocumentChange={setDocumentInput}
+    />
+  )
 
   return (
     <div className="flex flex-col gap-6">
@@ -75,7 +88,7 @@ export function RetirosPage() {
         </div>
 
         <div className="p-5">
-          <RetirosTable retiros={retiros} />
+          <RetirosTable retiros={retiros} isLoading={isLoading || isFetching} filters={filters} />
         </div>
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-5 py-3.5 border-t border-border text-sm">

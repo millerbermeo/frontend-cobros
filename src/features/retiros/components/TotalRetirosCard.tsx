@@ -8,7 +8,7 @@ interface TotalRetirosCardProps {
 
 export function TotalRetirosCard({ total }: TotalRetirosCardProps) {
   return (
-    <div className="rounded-2xl bg-gradient-to-r from-rose-600 to-red-500 shadow-sm p-6 flex items-center justify-between text-white">
+    <div className="rounded-2xl bg-linear-to-r from-rose-600 to-red-500 shadow-sm p-6 flex items-center justify-between text-white">
       <div>
         <p className="text-sm font-medium text-white/80">Total Retiros del Mes</p>
         <p className="text-3xl font-bold mt-1">{currency.format(total)}</p>
