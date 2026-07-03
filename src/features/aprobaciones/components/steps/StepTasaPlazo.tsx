@@ -10,9 +10,10 @@ interface StepTasaPlazoProps {
   onSubmit: (values: TasaPlazoValues) => void
   onBack: () => void
   isSubmitting?: boolean
+  readOnly?: boolean
 }
 
-export function StepTasaPlazo({ solicitud, onSubmit, onBack, isSubmitting }: StepTasaPlazoProps) {
+export function StepTasaPlazo({ solicitud, onSubmit, onBack, isSubmitting, readOnly }: StepTasaPlazoProps) {
   const { control, handleSubmit } = useForm<TasaPlazoValues>({
     resolver: zodResolver(tasaPlazoSchema),
     mode: 'onTouched',
@@ -23,25 +24,31 @@ export function StepTasaPlazo({ solicitud, onSubmit, onBack, isSubmitting }: Ste
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
       <p className="text-sm text-foreground/60">
-        Ajusta la tasa y el plazo del crédito si es necesario, luego guarda para continuar.
+        {readOnly
+          ? 'Tasa y plazo del crédito aprobado.'
+          : 'Ajusta la tasa y el plazo del crédito si es necesario, luego guarda para continuar.'}
       </p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormInput<TasaPlazoValues>
           name="rate" control={control}
           label="Tasa fija mensual (%)" placeholder="3.5" type="number" isRequired
+          isDisabled={readOnly}
         />
         <FormInput<TasaPlazoValues>
           name="term" control={control}
           label="Plazo (meses)" placeholder="12" type="number" isRequired
+          isDisabled={readOnly}
         />
       </div>
       <div className="flex justify-between gap-2 pt-2 border-t border-border">
         <Button type="button" variant="ghost" onPress={onBack} isDisabled={isSubmitting}>
           Atrás
         </Button>
-        <Button type="submit" variant="primary" isPending={isSubmitting}>
-          Guardar y continuar
-        </Button>
+        {!readOnly && (
+          <Button type="submit" variant="primary" isPending={isSubmitting}>
+            Guardar y continuar
+          </Button>
+        )}
       </div>
     </form>
   )

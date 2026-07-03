@@ -37,7 +37,7 @@ export function ApprovalStepper({ completados, rechazado = false, onSelect, isSt
         const enabled = !!onSelect && !!isStepEnabled?.(index)
 
         return (
-          <li key={label} className="flex flex-1 flex-col items-center last:flex-none">
+          <li key={label} className="flex flex-1 flex-col items-center">
             <div className="flex w-full items-center">
               <span className="flex-1">
                 {index > 0 && (

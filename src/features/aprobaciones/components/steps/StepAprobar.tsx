@@ -12,9 +12,10 @@ interface StepAprobarProps {
   onApprove: (values: DocsAprobacionValues) => void
   onBack: () => void
   isSubmitting?: boolean
+  readOnly?: boolean
 }
 
-function CurrentDoc({ raw }: { raw: string | null | undefined }) {
+function CurrentDoc({ raw, label = 'Ver documento actual' }: { raw: string | null | undefined; label?: string }) {
   const url = creditFileUrl(raw)
   if (!url) return null
   return (
@@ -25,12 +26,41 @@ function CurrentDoc({ raw }: { raw: string | null | undefined }) {
       className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline w-fit"
     >
       <MdInsertDriveFile className="h-3.5 w-3.5" />
-      Ver documento actual
+      {label}
     </a>
   )
 }
 
-export function StepAprobar({ solicitud, onApprove, onBack, isSubmitting }: StepAprobarProps) {
+function ReadOnlyDocs({ solicitud, onBack }: { solicitud: CreditApplication; onBack: () => void }) {
+  const docs = [solicitud.archive_1, solicitud.archive_2, solicitud.archive_3]
+  const hasAny = docs.some((d) => creditFileUrl(d))
+  return (
+    <div className="flex flex-col gap-5">
+      <p className="text-sm text-foreground/60">Documentos finales del crédito aprobado.</p>
+      {hasAny ? (
+        <div className="flex flex-col gap-2">
+          {docs.map((raw, i) =>
+            creditFileUrl(raw) ? (
+              <div key={i} className="flex items-center justify-between gap-3 rounded-xl border border-border bg-background/40 px-4 py-3">
+                <span className="text-sm text-foreground/70">Documento {i + 1}</span>
+                <CurrentDoc raw={raw} label="Ver documento" />
+              </div>
+            ) : null,
+          )}
+        </div>
+      ) : (
+        <p className="text-sm text-foreground/40">No hay documentos finales cargados.</p>
+      )}
+      <div className="flex justify-start pt-2 border-t border-border">
+        <Button type="button" variant="ghost" onPress={onBack}>Atrás</Button>
+      </div>
+    </div>
+  )
+}
+
+export function StepAprobar({ solicitud, onApprove, onBack, isSubmitting, readOnly }: StepAprobarProps) {
+  if (readOnly) return <ReadOnlyDocs solicitud={solicitud} onBack={onBack} />
+
   const { control, handleSubmit } = useForm<DocsAprobacionValues>({
     resolver: zodResolver(docsAprobacionSchema),
     mode: 'onTouched',

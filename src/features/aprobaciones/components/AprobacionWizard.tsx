@@ -90,6 +90,8 @@ export function AprobacionWizard({ solicitud, onDone }: AprobacionWizardProps) {
 
   const busy = updateCredit.isPending || uploadDocuments.isPending
   const finalizado = solicitud.state === 'Aprobado' || solicitud.state === 'Rechazado'
+  // Aprobado/Rechazado: solo lectura, no se puede modificar nada.
+  const readOnly = finalizado
   const showReject = step < TOTAL_STEPS - 1 && !finalizado
   // Paso 1 siempre; pasos 2 y 3 solo si ya está validado o ya se alcanzaron.
   const validado = solicitud.state === 'Validación' || solicitud.state === 'Aprobado'
@@ -112,11 +114,13 @@ export function AprobacionWizard({ solicitud, onDone }: AprobacionWizardProps) {
       {step === 0 && (
         <>
           <StepDocumentos solicitud={solicitud} />
-          <div className="flex justify-end pt-2 border-t border-border">
-            <Button variant="primary" onPress={handleValidarDocs} isPending={updateCredit.isPending}>
-              Documentos validados, continuar
-            </Button>
-          </div>
+          {!readOnly && (
+            <div className="flex justify-end pt-2 border-t border-border">
+              <Button variant="primary" onPress={handleValidarDocs} isPending={updateCredit.isPending}>
+                Documentos validados, continuar
+              </Button>
+            </div>
+          )}
         </>
       )}
 
@@ -126,6 +130,7 @@ export function AprobacionWizard({ solicitud, onDone }: AprobacionWizardProps) {
           onSubmit={handleTasaPlazo}
           onBack={() => setStep(0)}
           isSubmitting={updateCredit.isPending}
+          readOnly={readOnly}
         />
       )}
 
@@ -135,6 +140,7 @@ export function AprobacionWizard({ solicitud, onDone }: AprobacionWizardProps) {
           onApprove={handleApprove}
           onBack={() => setStep(1)}
           isSubmitting={uploadDocuments.isPending || updateCredit.isPending}
+          readOnly={readOnly}
         />
       )}
     </div>

@@ -46,7 +46,7 @@ export function GlobalModal() {
       <div
         className={cn(
           'fixed inset-0 z-101 flex items-center justify-center p-4',
-          'transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)]',
+          'transition-all duration-200 ease-in-out',
           isOpen
             ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto'
             : 'opacity-0 scale-95 translate-y-2 pointer-events-none'
