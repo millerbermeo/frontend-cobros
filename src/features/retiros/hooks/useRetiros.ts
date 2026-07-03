@@ -5,7 +5,13 @@ import type { WithdrawalsParams, WithdrawalsResponse } from '../types/retiros.ty
 
 const QUERY_KEY = 'retiros'
 
-const EMPTY_RESPONSE: WithdrawalsResponse = { success: true, data: [] }
+const EMPTY_RESPONSE: WithdrawalsResponse = {
+  success: true,
+  month: '',
+  filters: {},
+  totals: { total_amount: '0', available_amount: '0', recorded_amount: '0' },
+  data: [],
+}
 
 export function useWithdrawals(params: WithdrawalsParams) {
   return useQuery({

@@ -47,4 +47,12 @@ export const retiroColumns: Column<Record<string, unknown>>[] = [
         {String(val)}
       </span>
     ) },
+  { key: 'state', label: 'Estado',
+    render: (val) => {
+      const state = String(val)
+      const styles = state === 'Disponible'
+        ? 'text-emerald-700 bg-emerald-100 dark:text-emerald-300 dark:bg-emerald-500/15'
+        : 'text-amber-700 bg-amber-100 dark:text-amber-300 dark:bg-amber-500/15'
+      return <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${styles}`}>{state}</span>
+    } },
 ]

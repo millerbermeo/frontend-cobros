@@ -33,24 +33,36 @@ export interface WithdrawalCreateResponse {
 
 /** Retiro tal cual lo devuelve el backend (GET /list/withdrawal.php) */
 export interface Withdrawal {
-  id: string
+  id: number
   name: string
   document: string
   withdrawal_date: string
   withdrawal_hour: string
-  amount: string
+  amount: number
   concept: string
   authorized_by: string
   withdrawn_by: string
   registration_date: string
+  state: string
+}
+
+export interface WithdrawalsTotals {
+  total_amount: string
+  available_amount: string
+  recorded_amount: string
 }
 
 export interface WithdrawalsResponse {
   success: boolean
-  data: Withdrawal[] | Withdrawal
+  month: string
+  filters: WithdrawalsParams
+  totals: WithdrawalsTotals
+  data: Withdrawal[]
 }
 
 export interface WithdrawalsParams {
   name?: string
   document?: string
+  withdrawal_date?: string
+  withdrawn_by?: string
 }

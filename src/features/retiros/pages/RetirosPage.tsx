@@ -4,14 +4,12 @@ import { MdAdd, MdDescription } from 'react-icons/md'
 import { useModal } from '@/app/store/modal.store'
 import { alert } from '@/shared/utils/alert'
 import { useDebounce } from '@/shared/hooks/useDebounce'
-import { TotalRetirosCard } from '../components/TotalRetirosCard'
+import { RetirosStatsCards } from '../components/RetirosStatsCards'
 import { RetirosTable } from '../components/RetirosTable'
 import { RetirosFilters } from '../components/RetirosFilters'
 import { RetiroForm } from '../components/RetiroForm'
 import { useWithdrawals, useCreateRetiro } from '../hooks/useRetiros'
 import type { RetiroFormValues } from '../schemas/retiro.schema'
-
-const currency = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 })
 
 export function RetirosPage() {
   const { open, close } = useModal()
@@ -19,20 +17,28 @@ export function RetirosPage() {
 
   const [nameInput, setNameInput] = useState('')
   const [documentInput, setDocumentInput] = useState('')
+  const [withdrawnByInput, setWithdrawnByInput] = useState('')
+  const [withdrawalDate, setWithdrawalDate] = useState('')
+
   const name = useDebounce(nameInput, 400)
   const document = useDebounce(documentInput, 400)
+  const withdrawnBy = useDebounce(withdrawnByInput, 400)
 
   const params = useMemo(
-    () => ({ ...(name ? { name } : {}), ...(document ? { document } : {}) }),
-    [name, document],
+    () => ({
+      ...(name ? { name } : {}),
+      ...(document ? { document } : {}),
+      ...(withdrawnBy ? { withdrawn_by: withdrawnBy } : {}),
+      ...(withdrawalDate ? { withdrawal_date: withdrawalDate } : {}),
+    }),
+    [name, document, withdrawnBy, withdrawalDate],
   )
 
   const { data, isLoading, isFetching } = useWithdrawals(params)
 
-  // El backend devuelve `data` como array o como objeto único (1 resultado).
-  const raw = data?.data
-  const retiros = Array.isArray(raw) ? raw : raw ? [raw] : []
-  const total = useMemo(() => retiros.reduce((acc, r) => acc + Number(r.amount), 0), [retiros])
+  const retiros = data?.data ?? []
+  const totals = data?.totals ?? { total_amount: '0', available_amount: '0', recorded_amount: '0' }
+  const month = data?.month ?? ''
 
   const handleCreate = async (formData: RetiroFormValues) => {
     alert.loading('Registrando retiro...')
@@ -50,7 +56,7 @@ export function RetirosPage() {
   const openCreate = () => {
     open({
       title: 'Registrar Retiro',
-      size: 'sm',
+      size: 'md',
       content: <RetiroForm onSuccess={handleCreate} onCancel={close} isSubmitting={createRetiro.isPending} />,
     })
   }
@@ -59,8 +65,12 @@ export function RetirosPage() {
     <RetirosFilters
       name={nameInput}
       document={documentInput}
+      withdrawnBy={withdrawnByInput}
+      withdrawalDate={withdrawalDate}
       onNameChange={setNameInput}
       onDocumentChange={setDocumentInput}
+      onWithdrawnByChange={setWithdrawnByInput}
+      onWithdrawalDateChange={setWithdrawalDate}
     />
   )
 
@@ -78,7 +88,7 @@ export function RetirosPage() {
         </Button>
       </div>
 
-      <TotalRetirosCard total={total} />
+      <RetirosStatsCards totals={totals} month={month} />
 
       {/* Historial */}
       <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
@@ -91,12 +101,9 @@ export function RetirosPage() {
           <RetirosTable retiros={retiros} isLoading={isLoading || isFetching} filters={filters} />
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-5 py-3.5 border-t border-border text-sm">
+        <div className="px-5 py-3.5 border-t border-border text-sm">
           <p className="text-foreground/60">
             Total de retiros registrados: <span className="font-semibold text-foreground">{retiros.length}</span>
-          </p>
-          <p className="text-foreground/60">
-            Total acumulado: <span className="font-semibold text-rose-600 dark:text-rose-400">{currency.format(total)}</span>
           </p>
         </div>
       </div>

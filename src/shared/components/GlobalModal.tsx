@@ -66,7 +66,7 @@ export function GlobalModal() {
               <button
                 onClick={close}
                 aria-label="Cerrar"
-                className="w-7 h-7 flex items-center justify-center rounded-lg text-foreground/40 hover:text-foreground hover:bg-foreground/8 transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-full cursor-pointer bg-primary text-white hover:bg-primary/90 transition-colors"
               >
                 <MdClose className="w-4 h-4" />
               </button>
