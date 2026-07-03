@@ -73,17 +73,18 @@ export function AprobacionCard({ solicitud, onProcess }: AprobacionCardProps) {
         </div>
       )}
 
-      <div className="mt-4 flex justify-end">
-        <Button
-          variant={aprobado ? 'outline' : 'primary'}
-          className="gap-1.5"
-          onPress={() => onProcess(solicitud)}
-          isDisabled={rechazado}
-        >
-          {rechazado ? 'Rechazado' : aprobado ? 'Ver solicitud' : 'Procesar solicitud'}
-          {!rechazado && !aprobado && <MdArrowForward className="h-4 w-4" />}
-        </Button>
-      </div>
+      {!rechazado && (
+        <div className="mt-4 flex justify-end">
+          <Button
+            variant="primary"
+            className={cn('gap-1.5', aprobado && 'bg-emerald-600 hover:bg-emerald-700')}
+            onPress={() => onProcess(solicitud)}
+          >
+            {aprobado ? 'Ver solicitud' : 'Procesar solicitud'}
+            {!aprobado && <MdArrowForward className="h-4 w-4" />}
+          </Button>
+        </div>
+      )}
     </div>
   )
 }
