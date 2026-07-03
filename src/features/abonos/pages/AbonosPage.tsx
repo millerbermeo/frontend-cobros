@@ -8,6 +8,7 @@ import { CreditosFilters } from '../components/CreditosFilters'
 import { AbonosRegistroTable } from '../components/AbonosRegistroTable'
 import { PagosParcialesInfo } from '../components/PagosParcialesInfo'
 import { AbonoForm } from '../components/AbonoForm'
+import { CreditoDetalleModal } from '../components/CreditoDetalleModal'
 import { MOCK_ABONOS } from '../data/abonos.mock'
 import { useCreditosActivos } from '../hooks/useAbonos'
 import type { AbonoRegistro, CreditoActivo } from '../types/abonos.types'
@@ -69,7 +70,13 @@ export function AbonosPage() {
     })
   }
 
-  const verDetalles = (c: CreditoActivo) => alert.toast(`Abriendo detalle del crédito #${c.id_sol_credi}`)
+  const verDetalles = (c: CreditoActivo) => {
+    open({
+      title: `Detalle del Crédito #${c.id_sol_credi}`,
+      size: 'cover',
+      content: <CreditoDetalleModal creditoId={c.id} />,
+    })
+  }
 
   const creditosFilters = (
     <CreditosFilters
