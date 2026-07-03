@@ -1,10 +1,11 @@
+import { useMemo } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@heroui/react'
 import { MdAdd } from 'react-icons/md'
 import { FormMoneyInput, FormTextarea } from '@/shared/components/forms'
 import { Spinner } from '@/shared/components/loaders/Spinner'
-import { abonoSchema, type AbonoFormValues } from '../schemas/abono.schema'
+import { createAbonoSchema, type AbonoFormValues } from '../schemas/abono.schema'
 import { useCreditoConRetiros } from '../hooks/useAbonos'
 import { AbonoCreditoInfoCard } from './AbonoCreditoInfoCard'
 import { AbonoRetirosCard } from './AbonoRetirosCard'
@@ -27,11 +28,12 @@ function maxParaTipo(tipo: string, credito: CreditoActivo): number {
 
 export function AbonoForm({ credito, onSuccess, onCancel }: AbonoFormProps) {
   const { data, isLoading } = useCreditoConRetiros(credito.id)
+  const schema = useMemo(() => createAbonoSchema(credito), [credito])
   const { control, handleSubmit } = useForm<AbonoFormValues>({
-    resolver: zodResolver(abonoSchema),
+    resolver: zodResolver(schema),
     mode: 'onTouched',
     reValidateMode: 'onChange',
-    defaultValues: { tipo: 'interes', monto: '', notas: '' },
+    defaultValues: { tipo: 'interes', monto: '', montoInteres: '', montoCapital: '', notas: '' },
   })
 
   const tipo = useWatch({ control, name: 'tipo' })
@@ -54,13 +56,32 @@ export function AbonoForm({ credito, onSuccess, onCancel }: AbonoFormProps) {
 
       <AbonoTipoSelector control={control} credito={credito} />
 
-      <div className="flex flex-col gap-1">
-        <FormMoneyInput<AbonoFormValues>
-          name="monto" control={control}
-          label="Monto del Abono *" placeholder="0"
-        />
-        <p className="text-xs text-foreground/50">Máximo: {currency.format(maxParaTipo(tipo, credito))}</p>
-      </div>
+      {tipo === 'ambos' ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1">
+            <FormMoneyInput<AbonoFormValues>
+              name="montoInteres" control={control}
+              label="Monto a Interés *" placeholder="0"
+            />
+            <p className="text-xs text-foreground/50">Pendiente: {currency.format(credito.outstanding_interest)}</p>
+          </div>
+          <div className="flex flex-col gap-1">
+            <FormMoneyInput<AbonoFormValues>
+              name="montoCapital" control={control}
+              label="Monto a Capital *" placeholder="0"
+            />
+            <p className="text-xs text-foreground/50">Saldo: {currency.format(credito.outstanding_principal)}</p>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-1">
+          <FormMoneyInput<AbonoFormValues>
+            name="monto" control={control}
+            label="Monto del Abono *" placeholder="0"
+          />
+          <p className="text-xs text-foreground/50">Máximo: {currency.format(maxParaTipo(tipo, credito))}</p>
+        </div>
+      )}
 
       <FormTextarea<AbonoFormValues>
         name="notas" control={control}

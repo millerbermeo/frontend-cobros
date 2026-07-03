@@ -47,12 +47,16 @@ export function AbonosPage() {
   const creditos = data?.data ?? []
 
   const handleAbonar = (credito: CreditoActivo) => (data: AbonoFormValues) => {
+    const monto =
+      data.tipo === 'ambos'
+        ? Number(data.montoInteres) + Number(data.montoCapital)
+        : Number(data.monto)
     const nuevo: AbonoRegistro = {
       id: `ab${Date.now()}`,
       fecha: new Date().toISOString().slice(0, 10),
       cliente: credito.nombre,
       creditoNumero: credito.id_sol_credi,
-      monto: Number(data.monto),
+      monto,
       tipo: data.tipo,
       notas: data.notas?.trim() || 'Abono registrado',
     }
