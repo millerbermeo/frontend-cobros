@@ -1,5 +1,4 @@
 import api from '@/lib/axios'
-import { config } from '@/config'
 import type {
   CreateCreditApplicationResponse,
   CreditApplicationsParams,
@@ -7,18 +6,7 @@ import type {
 } from '../types/solicitudes.types'
 import type { SolicitudFormValues } from '../schemas/solicitud.schema'
 
-/**
- * El backend guarda los archivos como ruta absoluta del servidor
- * (/var/www/html/back/create/document_credit/<archivo>). Devuelve un enlace
- * abierto en el navegador, o null si no aplica.
- */
-export function creditFileUrl(raw: string | null | undefined): string | null {
-  if (!raw) return null
-  if (/^https?:\/\//i.test(raw)) return raw
-  const name = raw.split('/').pop()
-  if (!name) return null
-  return `${config.apiUrl}/create/document_credit/${name}`
-}
+export { creditFileUrl } from '@/shared/utils/creditFile'
 
 function appendFile(fd: FormData, key: string, value: unknown): void {
   const list = value as FileList | null

@@ -1,11 +1,15 @@
 import api from '@/lib/axios'
-import type { Aprobacion } from '../types/aprobaciones.types'
+import type {
+  CreditApplicationsParams,
+  CreditApplicationsResponse,
+  UpdateCreditPayload,
+  UpdateCreditResponse,
+} from '../types/aprobaciones.types'
 
 export const aprobacionesService = {
-  getAll: () => api.get<Aprobacion[]>('/aprobaciones'),
-  getById: (id: string) => api.get<Aprobacion>(`/aprobaciones/${id}`),
-  aprobar: (id: string, comentario?: string) =>
-    api.post<Aprobacion>(`/aprobaciones/${id}/aprobar`, { comentario }),
-  rechazar: (id: string, comentario?: string) =>
-    api.post<Aprobacion>(`/aprobaciones/${id}/rechazar`, { comentario }),
+  list: (params: CreditApplicationsParams = {}) =>
+    api.get<CreditApplicationsResponse>('/list/credit_application.php', { params }),
+  // PUT con body JSON: id + campos a actualizar (tasa, plazo, estado).
+  update: (payload: UpdateCreditPayload) =>
+    api.put<UpdateCreditResponse>('/create/update_credit_application.php', payload),
 }

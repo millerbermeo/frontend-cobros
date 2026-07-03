@@ -1,6 +1,6 @@
 import { MdCheck, MdPriorityHigh } from 'react-icons/md'
 import { cn } from '@/shared/utils/cn'
-import { APPROVAL_STEPS } from '../data/aprobaciones.mock'
+import { APPROVAL_STEPS } from '../constants'
 
 interface ApprovalStepperProps {
   /** Pasos completados (0..STEPS.length). */
