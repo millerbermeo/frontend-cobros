@@ -1,16 +1,7 @@
-import type { AbonoRegistro, CreditoAbono } from '../types/abonos.types'
-
-export const MOCK_CREDITOS: CreditoAbono[] = [
-  { id: 'x1', numero: 1, cliente: 'Ana Martínez Silva',    montoOriginal: 10_000_000, saldoCapital: 9_500_000,  interesesPendientes: -125_000, tasa: 2.5, fechaCorte: '2026-04-24', estado: 'activo' },
-  { id: 'x2', numero: 2, cliente: 'María González Pérez',  montoOriginal: 5_000_000,  saldoCapital: 4_200_000,  interesesPendientes: 270_000,  tasa: 3,   fechaCorte: '2026-04-15', estado: 'mora' },
-  { id: 'x3', numero: 3, cliente: 'Carlos Ramírez López',  montoOriginal: 8_000_000,  saldoCapital: 7_000_000,  interesesPendientes: 420_000,  tasa: 2.8, fechaCorte: '2026-04-20', estado: 'mora' },
-  { id: 'x4', numero: 4, cliente: 'Roberto Díaz Moreno',   montoOriginal: 15_000_000, saldoCapital: 13_500_000, interesesPendientes: -330_000, tasa: 2.2, fechaCorte: '2026-04-25', estado: 'activo' },
-  { id: 'x5', numero: 5, cliente: 'Laura Fernández Castro', montoOriginal: 6_000_000, saldoCapital: 5_800_000,  interesesPendientes: 550_400,  tasa: 3.2, fechaCorte: '2026-03-12', estado: 'mora' },
-  { id: 'x6', numero: 6, cliente: 'Pedro Sánchez Ortiz',   montoOriginal: 3_500_000,  saldoCapital: 3_500_000,  interesesPendientes: 532_000,  tasa: 3.8, fechaCorte: '2026-02-20', estado: 'mora' },
-]
+import type { AbonoRegistro } from '../types/abonos.types'
 
 export const MOCK_ABONOS: AbonoRegistro[] = [
-  { id: 'ab1',  fecha: '2026-02-10', cliente: 'Ana Martínez Silva',   creditoNumero: 1, monto: 125_000, tipo: 'interes', notas: 'Pago parcial de intereses mes 1 (1/2)' },
+  { id: 'ab1',  fecha: '2026-02-10', cliente: 'An1a Martínez Silva',   creditoNumero: 1, monto: 125_000, tipo: 'interes', notas: 'Pago parcial de intereses mes 1 (1/2)' },
   { id: 'ab2',  fecha: '2026-02-24', cliente: 'Ana Martínez Silva',   creditoNumero: 1, monto: 125_000, tipo: 'interes', notas: 'Pago parcial de intereses mes 1 (2/2)' },
   { id: 'ab3',  fecha: '2026-03-24', cliente: 'Ana Martínez Silva',   creditoNumero: 1, monto: 250_000, tipo: 'interes', notas: 'Pago completo de intereses mes 2' },
   { id: 'ab4',  fecha: '2026-03-25', cliente: 'Ana Martínez Silva',   creditoNumero: 1, monto: 300_000, tipo: 'capital', notas: 'Abono parcial a capital (1/2)' },

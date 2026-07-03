@@ -1,13 +1,16 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { cn } from '@/shared/utils/cn'
 import { useModal } from '@/app/store/modal.store'
 import { alert } from '@/shared/utils/alert'
+import { useDebounce } from '@/shared/hooks/useDebounce'
 import { CreditosTable } from '../components/CreditosTable'
+import { CreditosFilters } from '../components/CreditosFilters'
 import { AbonosRegistroTable } from '../components/AbonosRegistroTable'
 import { PagosParcialesInfo } from '../components/PagosParcialesInfo'
 import { AbonoForm } from '../components/AbonoForm'
-import { MOCK_ABONOS, MOCK_CREDITOS } from '../data/abonos.mock'
-import type { AbonoRegistro, CreditoAbono } from '../types/abonos.types'
+import { MOCK_ABONOS } from '../data/abonos.mock'
+import { useCreditosActivos } from '../hooks/useAbonos'
+import type { AbonoRegistro, CreditoActivo } from '../types/abonos.types'
 import type { AbonoFormValues } from '../schemas/abono.schema'
 
 type Tab = 'creditos' | 'registro'
@@ -22,12 +25,32 @@ export function AbonosPage() {
   const [tab, setTab] = useState<Tab>('creditos')
   const [abonos, setAbonos] = useState<AbonoRegistro[]>(MOCK_ABONOS)
 
-  const handleAbonar = (credito: CreditoAbono) => (data: AbonoFormValues) => {
+  const [idInput, setIdInput] = useState('')
+  const [nameInput, setNameInput] = useState('')
+  const [documentInput, setDocumentInput] = useState('')
+
+  const id = useDebounce(idInput, 400)
+  const name = useDebounce(nameInput, 400)
+  const document = useDebounce(documentInput, 400)
+
+  const params = useMemo(
+    () => ({
+      ...(id ? { id } : {}),
+      ...(name ? { name } : {}),
+      ...(document ? { document } : {}),
+    }),
+    [id, name, document],
+  )
+
+  const { data, isLoading, isFetching } = useCreditosActivos(params)
+  const creditos = data?.data ?? []
+
+  const handleAbonar = (credito: CreditoActivo) => (data: AbonoFormValues) => {
     const nuevo: AbonoRegistro = {
       id: `ab${Date.now()}`,
       fecha: new Date().toISOString().slice(0, 10),
-      cliente: credito.cliente,
-      creditoNumero: credito.numero,
+      cliente: credito.nombre,
+      creditoNumero: credito.id_sol_credi,
       monto: Number(data.monto),
       tipo: data.tipo,
       notas: data.notas?.trim() || 'Abono registrado',
@@ -38,7 +61,7 @@ export function AbonosPage() {
     setTab('registro')
   }
 
-  const openAbonar = (credito: CreditoAbono) => {
+  const openAbonar = (credito: CreditoActivo) => {
     open({
       title: 'Registrar Abono',
       size: 'sm',
@@ -46,7 +69,18 @@ export function AbonosPage() {
     })
   }
 
-  const verDetalles = (c: CreditoAbono) => alert.toast(`Abriendo detalle del crédito #${c.numero}`)
+  const verDetalles = (c: CreditoActivo) => alert.toast(`Abriendo detalle del crédito #${c.id_sol_credi}`)
+
+  const creditosFilters = (
+    <CreditosFilters
+      id={idInput}
+      name={nameInput}
+      document={documentInput}
+      onIdChange={setIdInput}
+      onNameChange={setNameInput}
+      onDocumentChange={setDocumentInput}
+    />
+  )
 
   return (
     <div className="flex flex-col gap-6">
@@ -82,7 +116,13 @@ export function AbonosPage() {
             <p className="text-sm text-foreground/50">Selecciona un crédito para ver su tabla de amortización y abonos detallados</p>
           </div>
           <div className="rounded-2xl border border-border bg-card shadow-sm p-5">
-            <CreditosTable creditos={MOCK_CREDITOS} onAbonar={openAbonar} onVerDetalles={verDetalles} />
+            <CreditosTable
+              creditos={creditos}
+              isLoading={isLoading || isFetching}
+              filters={creditosFilters}
+              onAbonar={openAbonar}
+              onVerDetalles={verDetalles}
+            />
           </div>
         </section>
       ) : (

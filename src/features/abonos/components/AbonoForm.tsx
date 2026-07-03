@@ -3,12 +3,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@heroui/react'
 import { FormInput, FormSelect, FormTextarea } from '@/shared/components/forms'
 import { abonoSchema, TIPO_ABONO_OPTIONS, type AbonoFormValues } from '../schemas/abono.schema'
-import type { CreditoAbono } from '../types/abonos.types'
+import type { CreditoActivo } from '../types/abonos.types'
 
 const currency = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 })
 
 interface AbonoFormProps {
-  credito: CreditoAbono
+  credito: CreditoActivo
   onSuccess: (data: AbonoFormValues) => void
   onCancel: () => void
 }
@@ -24,9 +24,9 @@ export function AbonoForm({ credito, onSuccess, onCancel }: AbonoFormProps) {
   return (
     <form onSubmit={handleSubmit(onSuccess)} className="flex flex-col gap-4">
       <div className="rounded-xl bg-foreground/5 px-4 py-3 text-sm">
-        <p className="font-medium text-foreground">{credito.cliente} · Crédito #{credito.numero}</p>
+        <p className="font-medium text-foreground">{credito.nombre} · Crédito #{credito.id_sol_credi}</p>
         <p className="text-foreground/60 mt-0.5">
-          Saldo capital: {currency.format(credito.saldoCapital)} · Intereses: {currency.format(credito.interesesPendientes)}
+          Saldo capital: {currency.format(credito.outstanding_principal)} · Intereses: {currency.format(credito.outstanding_interest)}
         </p>
       </div>
 
