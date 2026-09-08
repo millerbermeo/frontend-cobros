@@ -84,7 +84,7 @@ export function DataTable<T extends Record<string, unknown>>({
             </div>
           )}
           {filtersComponent && (
-            <div className="flex items-center gap-2 flex-wrap">{filtersComponent}</div>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">{filtersComponent}</div>
           )}
         </div>
       )}

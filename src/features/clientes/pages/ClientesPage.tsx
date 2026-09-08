@@ -238,7 +238,7 @@ export function ClientesPage() {
             <p className="text-xs text-foreground/45">{total} clientes registrados</p>
           </div>
         </div>
-        <Button variant="primary" onPress={openCreate} className="self-start sm:self-auto">
+        <Button variant="primary" onPress={openCreate} className="w-full sm:w-auto">
           <MdPersonAdd className="w-4 h-4 mr-1" />
           Registrar cliente
         </Button>
