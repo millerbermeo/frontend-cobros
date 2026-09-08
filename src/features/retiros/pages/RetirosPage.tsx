@@ -77,12 +77,12 @@ export function RetirosPage() {
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-foreground">Retiros</h1>
           <p className="text-sm text-foreground/50 mt-0.5">Registro de retiros de dinero y desembolsos</p>
         </div>
-        <Button variant="primary" className="gap-1.5 bg-emerald-600! hover:bg-emerald-700!" onPress={openCreate}>
+        <Button variant="primary" className="w-full sm:w-auto gap-1.5 bg-emerald-600! hover:bg-emerald-700!" onPress={openCreate}>
           <MdAdd className="h-4 w-4" />
           Registrar Retiro
         </Button>

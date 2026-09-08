@@ -155,7 +155,7 @@ export function SolicitudesPage() {
             <p className="text-xs text-foreground/45">{total} solicitudes registradas</p>
           </div>
         </div>
-        <Button variant="primary" onPress={openCreate} className="self-start sm:self-auto gap-1.5">
+        <Button variant="primary" onPress={openCreate} className="w-full sm:w-auto gap-1.5">
           <MdAdd className="w-4 h-4" />
           Nueva solicitud
         </Button>
