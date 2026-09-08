@@ -40,7 +40,7 @@ export const clienteSchema = z.object({
   source_of_income: z.string().optional().or(z.literal('')),
   url_source_of_income: z
     .any()
-    .refine((v) => v instanceof FileList && v.length > 0, 'Debes adjuntar el soporte de ingresos')
+    .optional()
     .refine(
       (v) => !(v instanceof FileList) || v.length === 0 || v[0].size <= MAX_FILE_MB * 1024 * 1024,
       `El archivo no puede superar ${MAX_FILE_MB}MB`,

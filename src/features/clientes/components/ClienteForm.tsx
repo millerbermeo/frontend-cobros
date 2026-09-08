@@ -143,7 +143,7 @@ export function ClienteForm({ customer, onSuccess, onCancel, isSubmitting }: Cli
         <FormFileUpload<ClienteFormValues>
           name="url_source_of_income"
           control={control}
-          label={isEdit ? 'Reemplazar soporte (opcional)' : 'Soporte de ingresos'}
+          label={isEdit ? 'Reemplazar soporte (opcional)' : 'Soporte de ingresos (opcional)'}
           accept=".pdf,.jpg,.jpeg,.png"
           maxSizeMB={5}
           description={
