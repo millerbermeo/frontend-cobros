@@ -21,7 +21,9 @@ import type { IconType } from 'react-icons'
 import { useTheme } from '@/shared/hooks/useTheme'
 import { cn } from '@/shared/utils/cn'
 import { useCurrentUser, useLogout } from '@/features/auth/hooks/useAuth'
+import { CommandPalette } from '@/shared/components/command-palette'
 import { CONTENT_PADDING_X, HEADER_HEIGHT } from './layout.constants'
+import { NAV_ITEMS } from './sidebar/nav-items'
 
 const ROUTE_META: Record<string, { label: string; icon: IconType }> = {
   '/':              { label: 'Dashboard',             icon: MdDashboard },
@@ -69,7 +71,7 @@ export function Navbar({ onMobileMenuOpen }: NavbarProps) {
       )}
     >
       {/* Left */}
-      <div className="flex items-center gap-2 md:gap-3 min-w-0">
+      <div className="flex items-center gap-2 md:gap-3 md:w-56 lg:w-64 3xl:w-72 md:shrink-0">
         <Button
           variant="ghost"
           isIconOnly
@@ -89,6 +91,9 @@ export function Navbar({ onMobileMenuOpen }: NavbarProps) {
           </h1>
         </div>
       </div>
+
+      {/* Center */}
+      <CommandPalette items={NAV_ITEMS} />
 
       {/* Right */}
       <div className="flex items-center gap-1 sm:gap-2 shrink-0">

@@ -20,7 +20,7 @@ const EMPTY_CELL = <span className="text-xs text-foreground/30">—</span>
 function FileCell({ raw, label }: { raw: string | null | undefined; label: string }) {
   const url = creditFileUrl(raw)
   if (!url) return EMPTY_CELL
-  return <DocumentChip label={label} url={url} iconOnly />
+  return <DocumentChip label={label} url={url} />
 }
 
 const APPROVAL_DOCS = ['Documento 1', 'Documento 2', 'Documento 3'] as const
@@ -36,7 +36,7 @@ function ApprovalDocs({ solicitud }: { solicitud: CreditApplication }) {
   return (
     <div className="flex items-center gap-1.5">
       {present.map((d) => (
-        <DocumentChip key={d.label} label={d.label} url={d.url} iconOnly />
+        <DocumentChip key={d.label} label={d.label} url={d.url} />
       ))}
     </div>
   )

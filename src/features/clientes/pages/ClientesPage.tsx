@@ -81,7 +81,7 @@ const columns: Column<Record<string, unknown>>[] = [
     render: (val) => {
       const url = customerFileUrl(val as string)
       if (!url) return <span className="text-xs text-foreground/30">—</span>
-      return <DocumentChip label="Soporte de ingresos" url={url} iconOnly />
+      return <DocumentChip label="Soporte de ingresos" url={url} />
     },
   },
 ]

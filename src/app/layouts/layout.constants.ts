@@ -10,8 +10,8 @@ export const HEADER_HEIGHT = 'h-14 md:h-16 3xl:h-20'
 /** Padding horizontal de navbar y contenido principal. */
 export const CONTENT_PADDING_X = 'px-3 sm:px-4 md:px-6 3xl:px-8 4xl:px-10'
 
-/** Ancho máximo del contenido para evitar líneas kilométricas en 27"–32". */
-export const CONTENT_MAX_WIDTH = 'mx-auto w-full max-w-[1400px] 3xl:max-w-[1720px] 4xl:max-w-[2100px]'
+/** El contenido ocupa siempre todo el ancho disponible del layout. */
+export const CONTENT_MAX_WIDTH = 'w-full'
 
 /** Ancho del sidebar de escritorio según estado y breakpoint. */
 export const SIDEBAR_WIDTH = {
