@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { isAxiosError } from 'axios'
 import { Button } from '@heroui/react'
-import { MdPersonAdd, MdPeople, MdSearch, MdInsertDriveFile, MdEdit } from 'react-icons/md'
+import { MdPersonAdd, MdPeople, MdSearch, MdEdit } from 'react-icons/md'
 import { useModal } from '@/app/store/modal.store'
 import { alert } from '@/shared/utils/alert'
 import { useDebounce } from '@/shared/hooks/useDebounce'
@@ -9,6 +9,7 @@ import { DataTable, type Column } from '@/shared/components/tables/DataTable'
 import { ClientesLayout } from '../layouts/ClientesLayout'
 import { ClienteForm } from '../components/ClienteForm'
 import { useCustomers, useCreateCliente, useUpdateCliente } from '../hooks/useClientes'
+import { DocumentChip } from '@/shared/components/documents/DocumentChip'
 import { customerFileUrl } from '../services/clientes.service'
 import type { Customer } from '../types/clientes.types'
 import type { ClienteFormValues } from '../schemas/cliente.schema'
@@ -80,17 +81,7 @@ const columns: Column<Record<string, unknown>>[] = [
     render: (val) => {
       const url = customerFileUrl(val as string)
       if (!url) return <span className="text-xs text-foreground/30">—</span>
-      return (
-        <a
-          href={url}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-        >
-          <MdInsertDriveFile className="w-4 h-4" />
-          Ver
-        </a>
-      )
+      return <DocumentChip label="Soporte de ingresos" url={url} iconOnly />
     },
   },
 ]

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
-import { Button } from '@heroui/react'
-import { MdSearch, MdArrowUpward, MdArrowDownward, MdChevronLeft, MdChevronRight } from 'react-icons/md'
+import { MdSearch, MdArrowUpward, MdArrowDownward } from 'react-icons/md'
 import { Spinner } from '@/shared/components/loaders/Spinner'
+import { TablePagination } from '@/shared/components/tables/TablePagination'
 import { PAGE_SIZE_OPTIONS } from '@/shared/constants/api.constants'
 import { cn } from '@/shared/utils/cn'
 
@@ -152,50 +152,32 @@ export function DataTable<T extends Record<string, unknown>>({
       {(onPageChange || onPageSizeChange) && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
           {totalItems !== undefined && (
-            <p className="text-sm text-muted">
+            <p className="text-sm text-muted 3xl:text-base">
               Total:{' '}
-              <span className="font-medium text-foreground">{totalItems}</span> registros
+              <span className="font-semibold text-foreground tabular-nums">{totalItems}</span> registros
             </p>
           )}
-          <div className="flex items-center gap-3 ml-auto">
+          <div className="flex items-center gap-2 sm:gap-3 ml-auto">
             {onPageSizeChange && (
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted whitespace-nowrap">Filas:</span>
+              <label className="flex items-center gap-2 text-xs text-muted whitespace-nowrap 3xl:text-sm">
+                Filas:
                 <select
                   value={pageSize}
                   onChange={(e) => onPageSizeChange(Number(e.target.value))}
-                  className="text-sm border border-border rounded-md px-2 py-1 bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  className="h-10 rounded-xl border border-border bg-card px-2.5 text-sm font-medium text-foreground shadow-sm cursor-pointer transition-colors hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary 3xl:h-12 3xl:text-base"
                 >
                   {pageSizeOptions.map((size) => (
                     <option key={size} value={size}>{size}</option>
                   ))}
                 </select>
-              </div>
+              </label>
             )}
             {onPageChange && totalPages > 1 && (
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  isIconOnly
-                  isDisabled={currentPage <= 1}
-                  onPress={() => onPageChange(currentPage - 1)}
-                  size="sm"
-                >
-                  <MdChevronLeft className="w-4 h-4" />
-                </Button>
-                <span className="text-sm px-3 py-1">
-                  {currentPage} / {totalPages}
-                </span>
-                <Button
-                  variant="ghost"
-                  isIconOnly
-                  isDisabled={currentPage >= totalPages}
-                  onPress={() => onPageChange(currentPage + 1)}
-                  size="sm"
-                >
-                  <MdChevronRight className="w-4 h-4" />
-                </Button>
-              </div>
+              <TablePagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={onPageChange}
+              />
             )}
           </div>
         </div>

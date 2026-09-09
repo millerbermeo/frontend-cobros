@@ -2,6 +2,14 @@ import Swal from 'sweetalert2'
 
 type AlertIcon = 'success' | 'error' | 'warning' | 'info'
 
+interface ChooseOptions {
+  text?: string
+  confirmText: string
+  denyText: string
+  onConfirm: () => void | Promise<void>
+  onDeny: () => void | Promise<void>
+}
+
 interface ConfirmOptions {
   text?: string
   confirmText?: string
@@ -35,6 +43,27 @@ const toastMixin = Swal.mixin({
   timer:              3000,
   timerProgressBar:   true,
 })
+
+const DOWNLOAD_BAR_ID = 'swal-download-bar'
+
+function downloadToastHtml(label: string) {
+  return `
+    <div class="flex items-center gap-3 text-left">
+      <span class="relative flex h-9 w-9 shrink-0 items-center justify-center">
+        <span class="absolute inset-0 rounded-full border-2 border-primary/20"></span>
+        <span class="absolute inset-0 rounded-full border-2 border-transparent border-t-primary animate-spin"></span>
+        <span class="text-primary text-base leading-none">↓</span>
+      </span>
+      <div class="min-w-0">
+        <p class="text-sm font-semibold leading-tight">Descargando</p>
+        <p class="text-xs opacity-60 truncate max-w-[13rem]">${label}</p>
+        <div class="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-current/10">
+          <div id="${DOWNLOAD_BAR_ID}" class="h-full w-1/3 rounded-full bg-primary/60 animate-pulse transition-[width] duration-200"></div>
+        </div>
+      </div>
+    </div>
+  `
+}
 
 export const alert = {
   loading: (title = 'Procesando...') => {
@@ -110,6 +139,69 @@ export const alert = {
 
     if (result.isConfirmed) await onConfirm()
     else if (result.isDismissed && onCancel) onCancel()
+  },
+
+  /**
+   * Diálogo de dos acciones. Se cierra con Esc o clic fuera.
+   *
+   * @example
+   * alert.choose('Identidad', {
+   *   confirmText: 'Ver', denyText: 'Descargar',
+   *   onConfirm: openInTab, onDeny: download,
+   * })
+   */
+  choose: async (title: string, options: ChooseOptions) => {
+    const { text, confirmText, denyText, onConfirm, onDeny } = options
+
+    const result = await buildSwal().fire({
+      title,
+      text,
+      icon: 'question',
+      showDenyButton: true,
+      showCancelButton: false,
+      confirmButtonText: confirmText,
+      denyButtonText: denyText,
+      denyButtonColor: '#0ea5e9',
+    })
+
+    if (result.isConfirmed) await onConfirm()
+    else if (result.isDenied) await onDeny()
+  },
+
+  /**
+   * Toast de progreso arriba a la derecha, sin timer.
+   * Devuelve el control para actualizar el porcentaje y cerrarlo.
+   *
+   * @example
+   * const dl = alert.download('Documento de identidad')
+   * dl.setProgress(60)
+   * dl.close()
+   */
+  download: (label: string) => {
+    const isDark = document.documentElement.classList.contains('dark')
+
+    void Swal.fire({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      allowOutsideClick: false,
+      html: downloadToastHtml(label),
+      background: isDark ? '#1e293b' : '#ffffff',
+      color:      isDark ? '#f1f5f9' : '#111827',
+      width: '22rem',
+    })
+
+    return {
+      setProgress: (percent: number) => {
+        const bar = document.getElementById(DOWNLOAD_BAR_ID)
+        if (!bar) return
+        // Al llegar el primer dato real se pasa de indeterminado a determinado.
+        bar.classList.remove('w-1/3', 'animate-pulse', 'bg-primary/60')
+        bar.classList.add('bg-primary')
+        bar.style.width = `${Math.max(0, Math.min(100, percent))}%`
+      },
+      close: () => Swal.close(),
+    }
   },
 
   /**

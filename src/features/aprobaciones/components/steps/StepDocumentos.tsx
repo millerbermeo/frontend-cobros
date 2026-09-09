@@ -1,4 +1,4 @@
-import { MdInsertDriveFile } from 'react-icons/md'
+import { DocumentChip } from '@/shared/components/documents/DocumentChip'
 import { creditFileUrl } from '@/shared/utils/creditFile'
 import type { CreditApplication } from '../../types/aprobaciones.types'
 
@@ -9,19 +9,12 @@ interface DocItem {
 
 function DocRow({ label, raw }: DocItem) {
   const url = creditFileUrl(raw)
+
   return (
     <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-background/40 px-4 py-3">
       <span className="text-sm text-foreground/70">{label}</span>
       {url ? (
-        <a
-          href={url}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-        >
-          <MdInsertDriveFile className="h-4 w-4" />
-          Ver documento
-        </a>
+        <DocumentChip label={label} url={url} />
       ) : (
         <span className="text-xs text-foreground/30">Sin archivo</span>
       )}

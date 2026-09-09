@@ -19,7 +19,9 @@ import {
 } from 'react-icons/md'
 import type { IconType } from 'react-icons'
 import { useTheme } from '@/shared/hooks/useTheme'
+import { cn } from '@/shared/utils/cn'
 import { useCurrentUser, useLogout } from '@/features/auth/hooks/useAuth'
+import { CONTENT_PADDING_X, HEADER_HEIGHT } from './layout.constants'
 
 const ROUTE_META: Record<string, { label: string; icon: IconType }> = {
   '/':              { label: 'Dashboard',             icon: MdDashboard },
@@ -59,29 +61,37 @@ export function Navbar({ onMobileMenuOpen }: NavbarProps) {
   const PageIcon = meta.icon
 
   return (
-    <header className="h-16 border-b border-border bg-card/80 backdrop-blur-md px-4 md:px-6 flex items-center justify-between shrink-0 z-10 shadow-sm">
+    <header
+      className={cn(
+        HEADER_HEIGHT,
+        CONTENT_PADDING_X,
+        'border-b border-border bg-card/80 backdrop-blur-md flex items-center justify-between gap-2 shrink-0 z-10 shadow-sm'
+      )}
+    >
       {/* Left */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 md:gap-3 min-w-0">
         <Button
           variant="ghost"
           isIconOnly
           aria-label="Abrir menú"
-          className="md:hidden text-foreground/60"
+          className="md:hidden text-foreground/60 shrink-0"
           onPress={onMobileMenuOpen}
         >
-          <MdMenu className="w-5 h-5" />
+          <MdMenu className="w-6 h-6" />
         </Button>
 
-        <div className="hidden md:flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
-            <PageIcon className="w-4 h-4 text-primary" />
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="hidden sm:flex w-7 h-7 rounded-lg bg-primary/10 items-center justify-center shrink-0 3xl:w-9 3xl:h-9">
+            <PageIcon className="w-4 h-4 text-primary 3xl:w-5 3xl:h-5" />
           </div>
-          <h1 className="text-sm font-semibold text-foreground">{meta.label}</h1>
+          <h1 className="text-sm font-semibold text-foreground truncate 3xl:text-base">
+            {meta.label}
+          </h1>
         </div>
       </div>
 
       {/* Right */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1 sm:gap-2 shrink-0">
         {/* Theme toggle */}
         <Tooltip delay={500}>
           <Tooltip.Trigger>
@@ -101,19 +111,23 @@ export function Navbar({ onMobileMenuOpen }: NavbarProps) {
         </Tooltip>
 
         {/* Divider */}
-        <div className="w-px h-6 bg-border mx-1" />
+        <div className="hidden sm:block w-px h-6 bg-border mx-1" />
 
         {/* User pill */}
         {user && (
-          <div className="hidden sm:flex items-center gap-2.5 bg-foreground/5 hover:bg-foreground/8 transition-colors rounded-xl px-3 py-1.5 cursor-default">
-            <Avatar size="sm" className="bg-primary w-7 h-7">
-              <Avatar.Fallback className="text-white text-[11px] font-bold">
+          <div className="hidden sm:flex items-center gap-2.5 bg-foreground/5 hover:bg-foreground/8 transition-colors rounded-xl px-2.5 py-1.5 cursor-default max-w-[40vw] lg:px-3 3xl:px-4 3xl:py-2">
+            <Avatar size="sm" className="bg-primary w-7 h-7 shrink-0 3xl:w-9 3xl:h-9">
+              <Avatar.Fallback className="text-white text-[11px] font-bold 3xl:text-sm">
                 {getInitials(user.name)}
               </Avatar.Fallback>
             </Avatar>
-            <div className="flex flex-col leading-tight">
-              <span className="text-xs font-semibold text-foreground">{user.name}</span>
-              <span className="text-[10px] text-foreground/40 font-medium">{user.rol}</span>
+            <div className="hidden md:flex flex-col leading-tight min-w-0">
+              <span className="text-xs font-semibold text-foreground truncate 3xl:text-sm">
+                {user.name}
+              </span>
+              <span className="text-[10px] text-foreground/40 font-medium truncate 3xl:text-xs">
+                {user.rol}
+              </span>
             </div>
           </div>
         )}

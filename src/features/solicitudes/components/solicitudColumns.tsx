@@ -1,5 +1,6 @@
 import { Button } from '@heroui/react'
-import { MdEdit, MdInsertDriveFile } from 'react-icons/md'
+import { MdEdit } from 'react-icons/md'
+import { DocumentChip } from '@/shared/components/documents/DocumentChip'
 import type { Column } from '@/shared/components/tables/DataTable'
 import { cn } from '@/shared/utils/cn'
 import { creditFileUrl } from '../services/solicitudes.service'
@@ -14,30 +15,28 @@ const ESTADO_CONFIG: Record<string, string> = {
   Rechazado:  'text-rose-700    bg-rose-100    dark:text-rose-300    dark:bg-rose-500/15',
 }
 
-function FileLink({ raw, label = 'Ver' }: { raw: string | null | undefined; label?: string }) {
+const EMPTY_CELL = <span className="text-xs text-foreground/30">—</span>
+
+function FileCell({ raw, label }: { raw: string | null | undefined; label: string }) {
   const url = creditFileUrl(raw)
-  if (!url) return <span className="text-xs text-foreground/30">—</span>
-  return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noreferrer"
-      className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-    >
-      <MdInsertDriveFile className="w-4 h-4" />
-      {label}
-    </a>
-  )
+  if (!url) return EMPTY_CELL
+  return <DocumentChip label={label} url={url} iconOnly />
 }
+
+const APPROVAL_DOCS = ['Documento 1', 'Documento 2', 'Documento 3'] as const
 
 function ApprovalDocs({ solicitud }: { solicitud: CreditApplication }) {
   const docs = [solicitud.archive_1, solicitud.archive_2, solicitud.archive_3]
-  const present = docs.filter((d) => creditFileUrl(d))
-  if (present.length === 0) return <span className="text-xs text-foreground/30">—</span>
+  const present = docs
+    .map((raw, i) => ({ url: creditFileUrl(raw), label: APPROVAL_DOCS[i] }))
+    .filter((d) => d.url)
+
+  if (present.length === 0) return EMPTY_CELL
+
   return (
-    <div className="flex items-center gap-3">
-      {present.map((raw, i) => (
-        <FileLink key={i} raw={raw} label={`Doc ${i + 1}`} />
+    <div className="flex items-center gap-1.5">
+      {present.map((d) => (
+        <DocumentChip key={d.label} label={d.label} url={d.url} iconOnly />
       ))}
     </div>
   )
@@ -82,10 +81,10 @@ export function buildColumns(
       render: (_, row) => {
         const s = row as unknown as CreditApplication
         return (
-          <div className="flex items-center gap-3">
-            <FileLink raw={s.archive_document} />
-            <FileLink raw={s.archive_payment_stub} />
-            <FileLink raw={s.archive_other} />
+          <div className="flex items-center gap-1.5">
+            <FileCell raw={s.archive_document} label="Documento de identidad" />
+            <FileCell raw={s.archive_payment_stub} label="Desprendible de pago" />
+            <FileCell raw={s.archive_other} label="Otros documentos" />
           </div>
         )
       },

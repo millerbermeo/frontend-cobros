@@ -1,5 +1,6 @@
 import { Button } from '@heroui/react'
-import { MdDescription, MdArticle, MdDownload, MdInsertDriveFile } from 'react-icons/md'
+import { MdDescription, MdArticle, MdDownload } from 'react-icons/md'
+import { DocumentChip } from '@/shared/components/documents/DocumentChip'
 import { creditFileUrl } from '@/shared/utils/creditFile'
 import { formatCOP } from '@/shared/utils/currency'
 import { formatFecha } from '@/shared/utils/date'
@@ -17,22 +18,6 @@ function Metric({ label, value }: { label: string; value: string }) {
       <p className="text-xs text-foreground/50">{label}</p>
       <p className="text-sm font-semibold text-foreground mt-0.5">{value}</p>
     </div>
-  )
-}
-
-function DocLink({ label, raw }: { label: string; raw: string | null | undefined }) {
-  const url = creditFileUrl(raw)
-  if (!url) return null
-  return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noreferrer"
-      className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background/40 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/5"
-    >
-      <MdInsertDriveFile className="h-4 w-4" />
-      {label}
-    </a>
   )
 }
 
@@ -76,7 +61,7 @@ export function ContratoCard({ contrato, onGenerar, onDescargar }: ContratoCardP
       {hasDocs ? (
         <div className="flex flex-wrap gap-2">
           {docs.map((d) => (
-            <DocLink key={d.label} label={d.label} raw={d.raw} />
+            <DocumentChip key={d.label} label={d.label} url={creditFileUrl(d.raw)} />
           ))}
         </div>
       ) : (

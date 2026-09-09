@@ -4,6 +4,14 @@
 @theme {
   --font-family-sans: 'Inter', system-ui, sans-serif;
 
+
+  /* Dimensiones del layout */
+  --spacing-sidebar: 15rem;            /* 240px */
+  --spacing-sidebar-lg: 16.5rem;       /* 264px */
+  --spacing-sidebar-xl: 18.5rem;       /* 296px */
+  --spacing-sidebar-collapsed: 4.5rem; /* 72px */
+  --spacing-sidebar-collapsed-lg: 5.5rem; /* 88px */
+
   --color-primary: #6366f1;
   --color-secondary: #8b5cf6;
   --color-success: #22c55e;
@@ -14,6 +22,16 @@
   --color-card: #ffffff;
   --color-border: #e5e7eb;
   --color-muted: #9ca3af;
+
+  /* Escala completa de breakpoints. Se redeclaran los por defecto para que
+     Tailwind registre 3xl/4xl DESPUÉS de xl/2xl y la cascada respete el orden. */
+  --breakpoint-sm: 40rem;   /* 640px  — móvil grande */
+  --breakpoint-md: 48rem;   /* 768px  — tablet */
+  --breakpoint-lg: 64rem;   /* 1024px — tablet landscape */
+  --breakpoint-xl: 80rem;   /* 1280px — laptop */
+  --breakpoint-2xl: 96rem;  /* 1536px — desktop */
+  --breakpoint-3xl: 120rem; /* 1920px — monitor 24"–27" */
+  --breakpoint-4xl: 160rem; /* 2560px — monitor 32" / 4K */
 }
 
 @layer base {
@@ -25,6 +43,20 @@
 
   html {
     scroll-behavior: smooth;
+  }
+
+  /* En monitores de 32" / 4K la UI queda diminuta con 16px base.
+     Subir la raíz escala tipografía, paddings y anchos en rem a la vez. */
+  @media (width >= 2560px) {
+    html {
+      font-size: 17px;
+    }
+  }
+
+  @media (width >= 3200px) {
+    html {
+      font-size: 18px;
+    }
   }
 
   body {

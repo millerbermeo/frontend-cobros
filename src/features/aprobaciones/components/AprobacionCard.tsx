@@ -1,26 +1,11 @@
 import { Button } from '@heroui/react'
-import { MdArrowForward, MdInsertDriveFile } from 'react-icons/md'
+import { MdArrowForward } from 'react-icons/md'
+import { DocumentChip } from '@/shared/components/documents/DocumentChip'
 import { cn } from '@/shared/utils/cn'
 import { creditFileUrl } from '@/shared/utils/creditFile'
 import { formatCOP } from '@/shared/utils/currency'
 import { formatFecha } from '@/shared/utils/date'
 import type { CreditApplication } from '../types/aprobaciones.types'
-
-function DocLink({ label, raw }: { label: string; raw: string | null | undefined }) {
-  const url = creditFileUrl(raw)
-  if (!url) return null
-  return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noreferrer"
-      className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-    >
-      <MdInsertDriveFile className="h-3.5 w-3.5" />
-      {label}
-    </a>
-  )
-}
 
 const ESTADO_CONFIG: Record<string, string> = {
   Pendiente:  'text-amber-700   bg-amber-100   dark:text-amber-300   dark:bg-amber-500/15',
@@ -60,19 +45,19 @@ export function AprobacionCard({ solicitud, onProcess }: AprobacionCardProps) {
         </span>
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-4 border-t border-border pt-3">
-        <span className="text-xs text-foreground/40">Documentos:</span>
-        <DocLink label="Identidad" raw={archive_document} />
-        <DocLink label="Desprendible" raw={archive_payment_stub} />
-        <DocLink label="Otros" raw={archive_other} />
+      <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-3">
+        <span className="text-xs text-foreground/40 mr-1">Documentos:</span>
+        <DocumentChip label="Identidad" url={creditFileUrl(archive_document)} />
+        <DocumentChip label="Desprendible" url={creditFileUrl(archive_payment_stub)} />
+        <DocumentChip label="Otros" url={creditFileUrl(archive_other)} />
       </div>
 
       {hasApprovalDocs && (
-        <div className="mt-2 flex flex-wrap items-center gap-4">
-          <span className="text-xs text-foreground/40">Aprobación:</span>
-          <DocLink label="Doc 1" raw={archive_1} />
-          <DocLink label="Doc 2" raw={archive_2} />
-          <DocLink label="Doc 3" raw={archive_3} />
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <span className="text-xs text-foreground/40 mr-1">Aprobación:</span>
+          <DocumentChip label="Doc 1" url={creditFileUrl(archive_1)} />
+          <DocumentChip label="Doc 2" url={creditFileUrl(archive_2)} />
+          <DocumentChip label="Doc 3" url={creditFileUrl(archive_3)} />
         </div>
       )}
 
